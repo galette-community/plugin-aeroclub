@@ -1,0 +1,117 @@
+-- Version 0.8.0 / 11 janvier 2013 --
+Nouveautés :
+- Compatibilité avec la version 0.7.3 de Galette
+- Amélioration statistiques des heures types de vol
+
+-- Version 0.7.4 / 4 janvier 2013 --
+Corrections / Nouveautés :
+- Problème à l'import (rétablissement de pseudo_adh)
+- Ajout de la suppression des logs d'import
+- Ajout d'un log d'import
+
+-- Version 0.7.3 / 27 décembre 2012 --
+Corrections :
+- Reactivation de l'export PDF qui ne marchait plus
+
+-- Version 0.7.2 / 12 décembre 2012 --
+Nouveautés :
+- Accès au module gestion pour les instructeurs
+- Amélioration de la réservation pour l'aéroclub (réservation en rouge dans le calendrier)
+
+-- Version 0.7.1 / 6 décembre 2012 --
+Corrections / Nouveautés :
+- Modification de la réservation possible si heure de fin non atteinte
+- Instructeur peut modifier toute réservation avec instructeur selon paramètres
+- Miniatures des avions ne s'affichaient pas quand fichier = 0Ko
+
+-- Version 0.7.0 / 26 novembre 2012 --
+Nouveautés :
+- Mise en place du n° de version
+- Instructeurs peuvent placer des réservations pour leurs elèves et les modifier
+Corrections :
+- Liaison des données de réservations vers login_adh au lieu de pseudo_adh
+
+-- Version 0.6.13 / 25 octobre 2012 --
+Corrections / Nouveautés :
+- Nouvelle installation en 0.7.1.7 : erreur en initialisation de base de données
+- Import des données : Semble ne pas se terminer.
+- Reservation avion : pouvoir "bloquer" un avion
+- Pourvoir gérer les retours chariots dans le champ "Adresse"
+- Synthèse des heures de vol par type de vol
+
+-- Version 0.6.12 / 23 octobre 2012 --
+Corrections / Nouveautés :
+- Supprimer les opérations qui ont été supprimées dans Access
+- Import des données : ne pas toucher l'indicateur "Apparaitre dans la liste des membres"
+- Import des données : le compte membre repasse à "Inactif"
+- Fonctionnement des miniatures des images des avions
+
+-- Version 0.6.11 / 3 septembre 2012 --
+Corrections / Nouveautés :
+- L'import des données réinitialise le champ "Réservable" des avions
+- Mise à jour du fichier des traductions
+- Sur la réservation, pouvoir modifier la date et l'heure
+- Historique des imports : afficher le nombre de lignes traitées
+
+-- Version 0.6.10 / 28 août 2012 --
+Corrections / Nouveautés :
+- Mise en place journal Historique des imports
+- Import des données : Sélection sur la date de dernier import
+- Module "Gestion" : Ajouter une liste des pilotes avec leur solde
+- Réservation avion : prévoir un indicateur "avion pas sur le planning"
+
+-- Version 0.6.9 / 20 juillet 2012 --
+Nouveautés :
+- Module "Gestion" : L'ouvrir aussi aux membres du comité directeur
+
+-- Version 0.6.8 / 11 juillet 2012 --
+Nouveautés :
+- Ajouter des modules et graphiques "Gestion"
+
+-- Version 0.6.7 / 1er juillet 2012 --
+Corrections / Nouveautés :
+- Possibilité de placer une réservation alors qu'on est un jour "interdit"
+- Impression du compte membre sous forme PDF
+- La mise à jour de la fiche pilote désactive le compte dans Galette
+- Afficher le temps de vol sur les 12 derniers mois
+
+-- Version 0.6.6 / 5 juin 2012 --
+Corrections / Nouveautés :
+- Securisation de la demande de réservation selon la situation du pilote
+
+-- Version 0.6.5 / 29 mai 2012 --
+Corrections / Nouveautés :
+- Pour l'admin : afficher situation / Fiche / Graphique d'un pilote
+- Formulaire de réservation : Aide en ligne
+
+-- Version 0.6.4 / 22 avril 2012 --
+Corrections / Nouveautés :
+- Import des opération : prise en compte cotisation section
+- Import des données : utilisation date dernière modification
+
+-- Version 0.6.3 / 17 avril 2012 --
+Corrections / Nouveautés :
+- Import des données : problème d'import
+- Planning des réservations : autoriser l'administrateur galette à saisir / modifier / supprimer des réservations
+- Reservation avion : pouvoir définir des journées non réservables
+
+-- Version 0.6.2 / 11 avril 2012 --
+Corrections :
+- Import des membres : Ne pas cocher "Je souhaite apparaitre dans la liste des membres"
+
+-- Version 0.6.1 / 27 mars 2012 --
+Corrections / Nouveautés :
+- Planning hebdo Réservation Avion : ajout n° de jour
+- Indisponibilité Avion : affichage avion utilisé
+- Compte Vol, interdiction modification
+- Mise à jour miniature avion
+- Compte Pilote : Afficher par défaut l'année en cours
+- Compte Pilote : les totaux ne sont pas calculés
+- Fiche avion : confusion Marque et type
+- Suppression du bouton "S'inscrire"
+
+-- Version 0.6.0 / 9 mars 2012 --
+Corrections :
+- Protection de l'identifiant
+
+■
