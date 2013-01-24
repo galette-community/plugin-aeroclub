@@ -1,0 +1,114 @@
+#ajout_avion, #mot_de_passe, #calendrier, #script_sql, #import, #parametre, #sauver, 
+#annuler, #reserver, #supprimer, #ajout_instructeur, #pdf, #dispo, #zoom, .button{
+    background-position: 10px 50%, 50% 50% !important;
+    background-repeat: no-repeat, repeat !important;
+    padding-left: 2em !important;
+}
+
+#ajout_avion {
+    background-image: url(../../picts/add-plane.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#ajout_avion.ui-state-hover {
+    background-image: url(../../picts/add-plane.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#mot_de_passe {
+    background-image: url(../../picts/password.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#mot_de_passe.ui-state-hover {
+    background-image: url(../../picts/password.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#calendrier {
+    background-image: url(../../picts/calendar.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#calendrier.ui-state-hover {
+    background-image: url(../../picts/calendar.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#script_sql {
+    background-image: url(../../picts/lancer.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#script_sql.ui-state-hover {
+    background-image: url(../../picts/lancer.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#import {
+    background-image: url(../../picts/import.gif), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#import.ui-state-hover {
+    background-image: url(../../picts/import.gif), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#parametre {
+    background-image: url(../../picts/parametre.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#parametre.ui-state-hover {
+    background-image: url(../../picts/parametre.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#sauver {
+    background-image: url(../../picts/save.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#sauver.ui-state-hover {
+    background-image: url(../../picts/save.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#annuler {
+    background-image: url(../../picts/cancel.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#annuler.ui-state-hover {
+    background-image: url(../../picts/cancel.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#reserver {
+    background-image: url(../../picts/reserved.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#reserver.ui-state-hover {
+    background-image: url(../../picts/reserved.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#supprimer {
+    background-image: url(../../picts/trash.gif), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#supprimer.ui-state-hover {
+    background-image: url(../../picts/trash.gif), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#ajout_instructeur {
+    background-image: url(../../picts/instructeur.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#ajout_instructeur.ui-state-hover {
+    background-image: url(../../picts/instructeur.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#pdf {
+    background-image: url(../../picts/pdf.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#pdf.ui-state-hover {
+    background-image: url(../../picts/pdf.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#dispo {
+    background-image: url(../../picts/dispos.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#dispo.ui-state-hover {
+    background-image: url(../../picts/dispos.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#zoom {
+    background-image: url(../../picts/zoom.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#zoom.ui-state-hover {
+    background-image: url(../../picts/zoom.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#tooltip {
+    position:absolute;
+    visibility:hidden;
+    background-color:#FFEEC7; 
+    border:1px solid black; 
+    padding:0.4em; 
+    font-size:0.8em;
+    max-width:250px;
+}
