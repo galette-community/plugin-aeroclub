@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS galette_pilote_reservations (
   commentaires varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   est_reservation_club tinyint(1) NOT NULL DEFAULT '0',
   est_rapproche tinyint(1) NOT NULL DEFAULT '0',
-  id_operation int(11) DEFAULT NULL,
+  id_operation int(10) unsigned DEFAULT NULL,
   date_creation datetime NOT NULL,
   date_modification datetime NOT NULL,
   `version_0.7` char(1) COLLATE utf8_unicode_ci DEFAULT NULL,
