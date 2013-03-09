@@ -137,6 +137,9 @@ setInterval("clignotement()", 500);
         {if !$reservations[$jour][$heure]->masquer}
             <td style="background-color: {if $reservations[$jour][$heure]->est_resa_club}{$couleur_interdit}{else}{$couleur_reserve}{/if}; text-align: center; vertical-align: top" rowspan="{$reservations[$jour][$heure]->rowspan}">
                 {if $reservations[$jour][$heure]->cliquable && $reservations[$jour][$heure]->editable}
+                    <a href="?jour={$jour_selectionne}&avion_id={$avion_id}&clone_resa_id={$reservations[$jour][$heure]->resa_id}">
+                        <img src="picts/copy.png" border="0" align="right" title="{_T string="RESERVATION.COPIER"}">
+                    </a>
                     <a href="?jour={$jour_selectionne}&avion_id={$avion_id}&resa_id={$reservations[$jour][$heure]->resa_id}">
                         <img src="picts/edit.png" border="0" align="right" title="{_T string="RESERVATION.MODIFIER"}">
                     </a>
@@ -158,6 +161,9 @@ setInterval("clignotement()", 500);
         {if !$reservations[$jour][$heure]->masquer}
             <td style="background-color: {if $reservations[$jour][$heure]->est_resa_club}{$couleur_interdit}{else}{$couleur_reserve}{/if}; text-align: center; vertical-align: top" rowspan="{$reservations[$jour][$heure]->rowspan}">
                 {if $reservations[$jour][$heure]->cliquable && $reservations[$jour][$heure]->editable}
+                    <a href="?jour={$jour_selectionne}&avion_id={$avion_id}&clone_resa_id={$reservations[$jour][$heure]->resa_id}">
+                        <img src="picts/copy.png" border="0" align="right" title="{_T string="RESERVATION.COPIER"}">
+                    </a>
                     <a href="?jour={$jour_selectionne}&avion_id={$avion_id}&resa_id={$reservations[$jour][$heure]->resa_id}">
                         <img src="picts/edit.png" border="0" align="right" title="{_T string="RESERVATION.MODIFIER"}">
                     </a>
@@ -347,7 +353,7 @@ setInterval("clignotement()", 500);
     </table>
 </div>
 <div class="button-container">
-{if $resa->reservation_id eq 'null'}
+{if $resa->reservation_id eq 'null' || $resa->reservation_id eq ''}
     <input type="submit" id="reserver" name="reserver" value="{_T string="RESERVATION.RESERVER"}">
 {else}
     <input type="submit" id="sauver" name="reserver" value="{_T string="RESERVATION.SAUVER"}">

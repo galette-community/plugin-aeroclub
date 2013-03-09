@@ -27,8 +27,8 @@
             <p>
                 <span class="bline">{_T string="COMPTE VOL.ADHERENT"}</span>
                 <select name="login_adherent">
-                {foreach from=$liste_adherents key=pseudo item=adherent}
-                    <option value="{$pseudo}"{if $adherent_selectionne eq $pseudo} selected="selected"{/if}>{$adherent}</option>
+                {foreach from=$liste_adherents item=adherent}
+                    <option value="{$adherent->pseudo_adh}"{if $adherent_selectionne eq $adherent->pseudo_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
                 {/foreach}
                 </select>
             </p>

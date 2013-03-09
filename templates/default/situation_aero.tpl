@@ -7,8 +7,8 @@
             <p>
                 <span class="bline">{_T string="SITUATION AERO.ADHERENT"}</span>
                 <select name="login_adherent">
-                {foreach from=$liste_adherents key=pseudo item=adh}
-                    <option value="{$pseudo}"{if $adherent_selectionne eq $pseudo} selected="selected"{/if}>{$adh}</option>
+                {foreach from=$liste_adherents item=adherent}
+                    <option value="{$adherent->pseudo_adh}"{if $adherent_selectionne eq $adherent->pseudo_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
                 {/foreach}
                 </select>
             </p>

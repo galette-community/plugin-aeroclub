@@ -12,8 +12,8 @@
             <span class="bline">{_T string="MODIFIER INSTRUCTEUR.ADHERENT"}</span>
             <select name="adherent_id" id="adherent_id" onChange="changerValeurs()">
                 <option value="null">--- Externe ---</option>
-                {foreach from=$liste_adherents key=id_adh item=adherent}
-                <option value="{$id_adh}"{if $instructeur->adherent_id eq $id_adh} selected{/if}>{$adherent}</option>
+                {foreach from=$liste_adherents item=adherent}
+                    <option value="{$adherent->id_adh}"{if $instructeur->adherent_id eq $adherent->id_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
                 {/foreach}
             </select>
             </p>

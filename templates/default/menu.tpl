@@ -10,7 +10,6 @@
    <li{if $PAGENAME eq "graphique.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}graphique.php">{_T string="MENU.GRAPHIQUE"}</a></li>
    <li{if $PAGENAME eq "fiche_pilote.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}fiche_pilote.php">{_T string="MENU.FICHE PILOTE"}</a></li>
    <li{if $PAGENAME eq "situation_aero.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}situation_aero.php">{_T string="MENU.SITUATION AERO"}</a></li>
-   <li{if $PAGENAME eq "mot_de_passe.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}mot_de_passe.php">{_T string="MENU.MOT DE PASSE"}</a></li>
 </ul>
 {/if}
 {if $is_instructeur eq 1 || $login->isStaff() || $login->isAdmin()}
@@ -31,7 +30,6 @@
    <li{if $PAGENAME eq "liste_instructeurs.php" || $PAGENAME eq "modifier_instructeur.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}liste_instructeurs.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.LISTE INSTRUCTEURS"}</a></li>
    <li{if $PAGENAME eq "new_operation.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}new_operation.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.NOUVELLE OPERATION"}</a></li>
    <li{if $PAGENAME eq "rapprochement.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}rapprochement.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.RAPPROCHEMENT"}</a></li>
-   <li{if $PAGENAME eq "change_pwd.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}change_pwd.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.CHANGER MOT PASSE"}</a></li>
    <li{if $PAGENAME eq "sql.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}sql.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.SQL"}</a></li>
    <li{if $PAGENAME eq "import.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}import.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.IMPORT"}</a></li>
 {* <li{if $PAGENAME eq "histo_import.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}histo_import.php"><img src="{$galette_base_path}{$pilote_dir}picts/lock.png"> {_T string="MENU ADMIN.HISTO IMPORT"}</a></li>*}

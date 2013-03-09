@@ -39,8 +39,8 @@
             </td>
             <td class="tbl_line_{if $smarty.foreach.rapproch.index is odd}odd{else}even{/if}" colspan="3">
                 <select name="id_adherent_{$resa_id}">
-{foreach from=$liste_adherents item=adherent key=id_adh}
-                    <option value="{$id_adh}"{if $id_adh eq $resa->id_adherent} selected="selected"{/if}>{$adherent}</option>
+{foreach from=$liste_adherents item=adherent}
+                    <option value="{$adherent->id_adh}"{if $resa->adherent_id eq $adherent->id_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
 {/foreach}
                 </select>
             </td>

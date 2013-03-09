@@ -18,8 +18,8 @@
             <p>
             <span class="bline">{_T string="NEW OPERATION.ADHERENT"}</span>
             <select name="adherent_id" required>
-                {foreach from=$liste_adherents key=id_adh item=adherent}
-                <option value="{$id_adh}"{if $id_adh eq $operation->id_adherent} selected="selected"{/if}>{$adherent}</option>
+                {foreach from=$liste_adherents item=adherent}
+                    <option value="{$adherent->id_adh}"{if $operation->id_adherent eq $adherent->id_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
                 {/foreach}
             </select>
             </p>
