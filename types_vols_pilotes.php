@@ -41,8 +41,8 @@ if (!$login->isLogged() || !(PiloteInstructeur::isPiloteInstructeur($login->logi
 // Récupération du tri
 $tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'nom_adh';
 $direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
-$annee = array_key_exists('annee', $_GET) ? $_GET['annee'] : date('Y');
-$selection_type_vols = array_key_exists('selection_type_vols', $_GET) ? $_GET['selection_type_vols'] : array();
+$annee = array_key_exists('annee', $_GET) ? $_GET['annee'] : -1;
+$selection_type_vols = array_key_exists('selection_type_vols', $_GET) ? $_GET['selection_type_vols'] : array('TVtotal');
 
 $tpl->assign('page_title', _T("TYPES VOLS PILOTES.PAGE TITLE"));
 //Set the path to the current plugin's templates,
@@ -51,9 +51,12 @@ $orig_template_path = $tpl->template_dir;
 $tpl->template_dir = 'templates/' . $preferences->pref_theme;
 
 // Récupération des données en base
+$annees = PiloteOperation::getAnneesOperations();
+if ($annee == -1) {
+    $annee = $annees[count($annees) - 1];
+}
 $stats = PiloteOperation::getTypeVolsHeuresPilotes($annee, $tri, $direction);
 $tvols = PiloteOperation::getTypesVols($annee);
-$annees = PiloteOperation::getAnneesOperations();
 
 $types_vols = array();
 $sommes = array();

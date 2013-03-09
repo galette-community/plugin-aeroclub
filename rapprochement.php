@@ -108,43 +108,12 @@ foreach ($liste_rapprochements as $resa_id => $resa) {
 /**
  * Récupération des différents types de vol
  */
-$liste_type_vols = array();
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'type_vol')
-            ->order('type_vol')
-            ->group('type_vol');
-    $rows = $select->query()->fetchAll();
-    foreach ($rows as $row) {
-        $liste_type_vols[] = $row->type_vol;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
-
+$liste_type_vols = PiloteOperation::getTypesVols();
 
 /**
  * Récupération de la liste des pilotes adhérents actifs
  */
-$liste_adherents = array();
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->id_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 $tpl->assign('page_title', _T("RAPPROCHEMENT.PAGE TITLE"));
 //Set the path to the current plugin's templates,

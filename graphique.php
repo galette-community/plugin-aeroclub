@@ -43,26 +43,7 @@ if ($login->isAdmin() && array_key_exists('login_adherent', $_GET)) {
     $pseudo = $_GET['login_adherent'];
 }
 
-$liste_adherents = array();
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->login_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
-
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 $tpl->assign('page_title', _T("GRAPHIQUE.PAGE TITLE"));
 //Set the path to the current plugin's templates,

@@ -43,57 +43,23 @@ $tpl->assign('page_title', _T("FICHE PILOTE.PAGE TITLE"));
 $orig_template_path = $tpl->template_dir;
 $tpl->template_dir = 'templates/' . $preferences->pref_theme;
 
-$pseudo = $login->login;
+$pseudo = $login->id;
 if ($login->isAdmin() && array_key_exists('login_adherent', $_GET)) {
     $pseudo = $_GET['login_adherent'];
 }
 
-$liste_adherents = array();
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->login_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 /**
  * Récupération du dernier vol du pilote
  */
-global $zdb;
-
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'max(date_operation) as dernier_vol')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('duree_minute is not null');
-    if ($select->query()->rowCount() == 1) {
-        $dt = new DateTime($select->query()->fetch()->dernier_vol);
-        $tpl->assign('dernier_vol', $dt->format('j M Y'));
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$dernier_vol = PiloteOperation::getDernierVolForLogin($pseudo);
 
 $adh = new Galette\Entity\Adherent($pseudo);
 $tpl->assign('liste_adherents', $liste_adherents);
 $tpl->assign('adherent_selectionne', $pseudo);
 $tpl->assign('adherent', $adh);
+$tpl->assign('dernier_vol', $dernier_vol);
 $tpl->assign('complement', new PiloteAdherentComplement($pseudo));
 
 $content = $tpl->fetch('fiche_pilote.tpl', PILOTE_SMARTY_PREFIX);

@@ -28,10 +28,15 @@
  * @since     Available since 0.7
  */
 
+define('PILOTE_PREFIX', 'pilote_');
+require_once 'classes/piloteInstructeur.class.php';
+global $login;
+
 $_tpl_assignments = array(
-    'dossier_includes'   => '__plugin_include_dir__dossier',
-    'pilote_tpl_dir'  => '__plugin_templates_dir__',
-    'pilote_dir'      => '__plugin_dir__'
+    'dossier_includes' => '__plugin_include_dir__dossier',
+    'pilote_tpl_dir'   => '__plugin_templates_dir__',
+    'pilote_dir'       => '__plugin_dir__',
+    'is_instructeur'   => PiloteInstructeur::isPiloteInstructeur($login->login)
 );
 
 ?>

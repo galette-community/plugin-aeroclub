@@ -1,3 +1,9 @@
+-- Version 0.8.1 / 9 mars 2013 --
+Nouveautés :
+- Préchargement des valeurs sur "Soldes pilotes" et "Types vols pilotes"
+- Possibilité de dupliquer une réservation
+- Refactoring des accès BDD
+
 -- Version 0.8.0 / 11 janvier 2013 --
 Nouveautés :
 - Compatibilité avec la version 0.7.3 de Galette

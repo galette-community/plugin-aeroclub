@@ -102,45 +102,9 @@ if (array_key_exists('annuler', $_POST)) {
 
 global $zdb;
 
-$liste_type_operations = array();
-/**
- * Récupération de la liste des types d'opérations
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'type_operation')
-            ->group('type_operation')
-            ->order('1');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_type_operations[] = $row->type_operation;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_type_operations = PiloteOperation::getTypesOperations();
 
-$liste_type_vols = array();
-/**
- * Récupération de la liste des types de vols
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'type_vol')
-            ->group('type_vol')
-            ->order('1');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_type_vols[] = $row->type_vol;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_type_vols = PiloteOperation::getTypesVols();
 
 /**
  * Récupération de l'opération si elle existe ou initialisation d'une nouvelle
@@ -163,30 +127,8 @@ if (array_key_exists('operation_id', $_GET)) {
     $operation->duree_heure = 0;
 }
 
-$liste_adherents = array();
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 $login_adherent = '';
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        if ($operation->id_adherent == $row->id_adh) {
-            $login_adherent = $row->login_adh;
-        }
-        $liste_adherents[$row->id_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
-
 
 $tpl->assign('page_title', _T("NEW OPERATION.PAGE TITLE"));
 //Set the path to the current plugin's templates,

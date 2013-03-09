@@ -65,7 +65,7 @@ if (array_key_exists('sendmail', $_GET)) {
 $tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'nom';
 $direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
 $actif = array_key_exists('actif', $_GET) ? $_GET['actif'] : 'null';
-$solde = array_key_exists('solde', $_GET) ? $_GET['solde'] : 'null';
+$solde = array_key_exists('solde', $_GET) ? $_GET['solde'] : 'all';
 
 switch ($tri) {
     case 'nom':

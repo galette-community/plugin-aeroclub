@@ -44,131 +44,32 @@ if ($login->isAdmin() && array_key_exists('login_adherent', $_GET)) {
     $pseudo = $_GET['login_adherent'];
 }
 
-$liste_adherents = array();
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->login_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 /**
  * Calcul du solde du pilote
  */
-$solde = 0;
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(montant_operation) as solde')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('YEAR(date_operation) = ?', date('Y'));
-    if ($select->query()->rowCount() == 1) {
-        $solde = $select->query()->fetch()->solde;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$solde = PiloteOperation::getSoldeCompteForLogin($pseudo, date('Y'));
 
 /**
  * Calcul du temps de vol du pilote
  */
-$duree_vol = 0;
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('duree_minute is not null')
-            ->where('YEAR(date_operation) = ?', date('Y'));
-    if ($select->query()->rowCount() == 1) {
-        $duree_vol = $select->query()->fetch()->duree;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$duree_vol = PiloteOperation::getTempsVolForLogin($pseudo, date('Y'));
 
 /**
  * Calcul du temps de vol du pilote sur 1 année glissante
  */
-$duree_vol_glissant = 0;
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('date_operation > ?', date('Y-m-d', strtotime('-1 year')));
-    if ($select->query()->rowCount() == 1) {
-        $duree_vol_glissant = $select->query()->fetch()->duree;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$duree_vol_glissant = PiloteOperation::getTempsVolAnneeGlissanteForLogin($pseudo);
 
 /**
  * Calcul du nombre d'atterrissages dans les 3 derniers mois
  */
-$nb_atterr = 0;
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(nb_atterrissages) as sum')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('duree_minute is not null')
-            ->where('date_operation > date_sub(now(), interval 3 month)');
-    if ($select->query()->rowCount() == 1) {
-        $nb_atterr = $select->query()->fetch()->sum;
-        if ($nb_atterr == null) {
-            $nb_atterr = 0;
-        }
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$nb_atterr = PiloteOperation::getNombreAtterrissageTroisDerniersMois($pseudo);
 
 /**
  * Récupération du dernier vol du pilote
  */
-$dernier_vol = '';
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'max(date_operation) as dernier_vol')
-            ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-            ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-            ->where('duree_minute is not null');
-    if ($select->query()->rowCount() == 1) {
-        $dt = new DateTime($select->query()->fetch()->dernier_vol);
-        $dernier_vol = $dt->format('j M Y');
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$dernier_vol = PiloteOperation::getDernierVolForLogin($pseudo);
 
 $complement = new PiloteAdherentComplement($pseudo);
 

@@ -102,10 +102,10 @@ if (array_key_exists('reserver', $_POST)) {
     $reservation->no_portable = $_POST['resa_portable'];
     $reservation->commentaires = $_POST['resa_commentaires'];
     $reservation->est_reservation_club = $_POST['est_resa_club'] == '1';
-    if($reservation->est_reservation_club){
+    if ($reservation->est_reservation_club) {
         $reservation->id_adherent = null;
     }
-    
+
     // Sauvegarde que sur une date future (on sait jamais)
     if ($reservation->heure_fin <= date('Y-m-d H:i:s')) {
         $ok = false;
@@ -157,11 +157,11 @@ $jour_selectionne = array_key_exists('jour', $_GET) ? $_GET['jour'] : date('Ymd'
 $avion_id = array_key_exists('avion_id', $_GET) ? $_GET['avion_id'] : null;
 $resa_jour = array_key_exists('resa_jour', $_GET) ? $_GET['resa_jour'] : null;
 $resa_heure = array_key_exists('resa_heure', $_GET) ? $_GET['resa_heure'] : null;
-$resa_heure_fin = array_key_exists('resa_heure_fin', $_GET) ? $_GET['resa_heure_fin'] : null;
 $resa_ok = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_ok';
 $resa_annule = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_annule';
 $resa_supprime = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_supprime';
 $resa_id = array_key_exists('resa_id', $_GET) ? $_GET['resa_id'] : null;
+$clone_resa_id = array_key_exists('clone_resa_id', $_GET) ? $_GET['clone_resa_id'] : null;
 
 $dessine_avion = true;
 $dessine_semaine = true;
@@ -170,7 +170,7 @@ $dessine_reservation = false;
 if ($avion_id == null) {
     $dessine_semaine = false;
 }
-if ($resa_jour != null || $resa_id != null || $reservation != null) {
+if ($resa_jour != null || $resa_id != null || $reservation != null || $clone_resa_id || null) {
     $dessine_avion = false;
     $dessine_semaine = false;
     $dessine_reservation = true;
@@ -395,7 +395,7 @@ if ($login->isAdmin() || $is_instructeur) {
 /**
  * Ajout/Modification d'une réservation
  */
-if ($resa_jour != null || $resa_id != null) {
+if ($resa_jour != null || $resa_id != null || $clone_resa_id != null) {
 
     // Vérification réservation possible
     $aff_msg_warning = false;
@@ -434,8 +434,8 @@ if ($resa_jour != null || $resa_id != null) {
 
     // Heures de réservation
     // Si un ID de réservation est indiquée, on la charge
-    if ($resa_id != null) {
-        $resa = new PiloteReservation(intval($resa_id));
+    if ($resa_id != null || $clone_resa_id != null) {
+        $resa = $resa_id != null ? new PiloteReservation(intval($resa_id)) : new PiloteReservation(intval($clone_resa_id), true);
         $resa_heure = substr($resa->heure_debut, 11, 5);
         $resa_jour = substr($resa->heure_debut, 0, 10);
 

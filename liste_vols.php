@@ -107,42 +107,11 @@ $pagination = PiloteParametre::faitPagination($page, $tri, $direction, $nb_opera
 /**
  * Ajout des années disponibles à la consultation dans la liste déroulante
  */
-$liste_annees[] = _T('LISTE VOLS.TOUTES');
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'YEAR(date_operation) as year')
-            ->distinct()
-            ->order('1');
-    $rows = $select->query()->fetchAll();
-    foreach ($rows as $annee) {
-        $liste_annees[] = $annee->year;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_annees = PiloteOperation::getAnneesOperations();
+// Insert à la position 0
+array_splice($liste_annees, 0, 0, array(_T("LISTE VOLS.TOUTES")));
 
-$liste_adherents = array();
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->login_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 $tpl->assign('page_title', _T("LISTE VOLS.PAGE TITLE"));
 //Set the path to the current plugin's templates,

@@ -97,42 +97,11 @@ $liste_annees = array();
 /**
  * Ajout des années disponibles à la consultation dans la liste déroulante
  */
-$liste_annees[] = _T('COMPTE VOL.TOUTES');
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'YEAR(date_operation) as year')
-            ->distinct()
-            ->order('1');
-    $rows = $select->query()->fetchAll();
-    foreach ($rows as $annee) {
-        $liste_annees[] = $annee->year;
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_annees = PiloteOperation::getAnneesOperations();
+// Insert à la position 0
+array_splice($liste_annees, 0, 0, array(_T("COMPTE VOL.TOUTES")));
 
-$liste_adherents = array();
-/**
- * Récupération de la liste des adhérents actifs
- */
-try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-            ->where('activite_adh = 1')
-            ->order('nom_adh');
-    $result = $select->query()->fetchAll();
-    foreach ($result as $row) {
-        $liste_adherents[$row->login_adh] = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
-    }
-} catch (Exception $e) {
-    Analog\Analog::log(
-            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-            $e->getTraceAsString(), Analog\Analog::ERROR
-    );
-}
+$liste_adherents = PiloteOperation::getAdherentsActifs();
 
 /**
  * Calcul des totaux : solde + heures de vol
@@ -156,8 +125,7 @@ $tpl->template_dir = 'templates/' . $preferences->pref_theme;
 
 $tpl->assign('liste_operations', $liste_operations);
 // Date du jour
-$dt = new DateTime();
-$tpl->assign('date_jour', $dt->format('j M Y'));
+$tpl->assign('date_jour', $toutes_operations[count($toutes_operations) - 1]->date_operation);
 // Total vols
 $heure_vols = floor($total_vols / 60);
 $minute_vols = $total_vols - $heure_vols * 60;
