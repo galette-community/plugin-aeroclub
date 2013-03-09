@@ -95,8 +95,9 @@ class PiloteReservation {
      * Créé une nouvelle reservation vierge ou charge une réservation à partir de son ID
      * 
      * @param int|object $args ID ou ligne de BDD
+     * @param bool $cloned Indique si la réservation est clonée d'une autre (si true, l'ID réservation est mis à null)
      */
-    public function __construct($args = null) {
+    public function __construct($args = null, $cloned = false) {
         global $zdb;
 
         if (is_int($args)) {
@@ -106,6 +107,9 @@ class PiloteReservation {
                         ->where(self::PK . ' = ' . $args);
                 if ($select->query()->rowCount() == 1) {
                     $this->_loadFromRS($select->query()->fetch());
+                }
+                if ($cloned) {
+                    unset($this->_reservation_id);
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(

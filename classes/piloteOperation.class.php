@@ -410,6 +410,36 @@ class PiloteOperation {
     }
 
     /**
+     * Renvoi la date sous forme textuelle du dernier vol de l'utilisateur donné en paramètre
+     * 
+     * @param string $login Login de l'adhérent dont on souhaite la date de dernier vol
+     * 
+     * @return boolean|string False si échec, sinon string représentant la date (ex: 1 
+     */
+    public static function getDernierVolForLogin($login) {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'max(date_operation) as dernier_vol')
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
+                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
+                    ->where('duree_minute is not null');
+            if ($select->query()->rowCount() == 1) {
+                $dt = new DateTime($select->query()->fetch()->dernier_vol);
+                return $dt->format('j M Y');
+            }
+            return '';
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+            return false;
+        }
+    }
+
+    /**
      * Renvoie le solde opérationnel d'un membre pour une année donnée.
      * Si l'année n'est pas précisée, prend l'année en cours.
      * 
@@ -440,6 +470,97 @@ class PiloteOperation {
             );
             return false;
         }
+    }
+
+    /**
+     * Renvoi le temps de vol cumulé en minute sur l'année spécifiée d'un utilisateur par son login
+     * 
+     * @param string $login Identifiant de l'utilisateur
+     * @param int $annee Année sur laquelle calculer le temps de vol
+     * 
+     * @return boolean|int Nombre de minutes de temps de vol
+     */
+    public static function getTempsVolForLogin($login, $annee) {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
+                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
+                    ->where('duree_minute is not null')
+                    ->where('YEAR(date_operation) = ?', $annee);
+            if ($select->query()->rowCount() == 1) {
+                return $select->query()->fetch()->duree;
+            }
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+        }
+        return false;
+    }
+
+    /**
+     * Renvoi le nombre d'atterrissages d'un adhérent au cours des 3 derniers mois
+     * 
+     * @param string $login Identifiant de l'utilisateur
+     * 
+     * @return int|boolean Le nombre d'atterrisages de l'adhérent au cours des 3 derniers mois
+     */
+    public static function getNombreAtterrissageTroisDerniersMois($login) {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(nb_atterrissages) as sum')
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
+                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
+                    ->where('duree_minute is not null')
+                    ->where('date_operation > date_sub(now(), interval 3 month)');
+            if ($select->query()->rowCount() == 1) {
+                $nb_atterr = $select->query()->fetch()->sum;
+                if ($nb_atterr == null) {
+                    $nb_atterr = 0;
+                }
+                return $nb_atterr;
+            }
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+        }
+        return false;
+    }
+
+    /**
+     * Renvoi le temps de vol cumulé sur la dernière année glissante pour un utilisateur spécifié
+     * 
+     * @param string $login Login de l'utilisateur dont on souhaite le temps de vol cumulé
+     * 
+     * @return boolean|int Le temps de vol sur une année glissante en minute
+     */
+    public static function getTempsVolAnneeGlissanteForLogin($login) {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
+                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
+                    ->where('date_operation > ?', date('Y-m-d', strtotime('-1 year')));
+            if ($select->query()->rowCount() == 1) {
+                return $select->query()->fetch()->duree;
+            }
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+        }
+        return false;
     }
 
     /**
@@ -486,6 +607,14 @@ class PiloteOperation {
          */
     }
 
+    /**
+     * Renvoi la liste des types de vol pour l'année indiquée ou sur toutes les opérations
+     * si aucune année indiquée
+     * 
+     * @param int $annee Année sur laquelle filtrer pour les types de vols, ou rien
+     * 
+     * @return boolean|string[] Liste des types de vols pour l'année ou tous
+     */
     public static function getTypesVols($annee = '') {
         global $zdb;
 
@@ -506,6 +635,34 @@ class PiloteOperation {
                 }
                 return $result;
             }
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+            return false;
+        }
+    }
+
+    /**
+     * Renvoi la liste des types d'opération existant dans la base
+     * 
+     * @return boolean|string[] Liste ordonnée des types d'opération
+     */
+    public static function getTypesOperations() {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, array('type_operation'))
+                    ->group('type_operation')
+                    ->order('1');
+            $result = array();
+            $rows = $select->query()->fetchAll();
+            foreach ($rows as $r) {
+                $result[] = $r->type_operation;
+            }
+            return $result;
         } catch (Exception $e) {
             Analog\Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
@@ -838,6 +995,37 @@ class PiloteOperation {
                 return $select->query()->fetch()->somme;
             }
             return false;
+        } catch (Exception $e) {
+            Analog\Analog::log(
+                    'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                    $e->getTraceAsString(), Analog\Analog::ERROR
+            );
+            return false;
+        }
+    }
+
+    /**
+     * Renvoi la liste des adhérents actifs triés par la propriété indiquées (nom par défaut)
+     * 
+     * @param type $orderby
+     * 
+     * @return boolean|SQL Tableau des lignes SQL des adhérents actifs (objet avec noms de colonnes)
+     */
+    public static function getAdherentsActifs($orderby = 'nom_adh') {
+        global $zdb;
+
+        try {
+            $select = new Zend_Db_Select($zdb->db);
+            $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
+                    ->where('activite_adh = 1')
+                    ->order($orderby);
+            $result = $select->query()->fetchAll();
+
+            $liste_adherents = array();
+            foreach ($result as $row) {
+                $liste_adherents[] = $row;
+            }
+            return $liste_adherents;
         } catch (Exception $e) {
             Analog\Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
