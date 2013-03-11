@@ -108,9 +108,9 @@ $liste_adherents = PiloteOperation::getAdherentsActifs();
  */
 // Correction BUG 3
 if ($annee_selectionnee != _T('COMPTE VOL.TOUTES')) {
-    $toutes_operations = PiloteOperation::getOperationsForLogin($pseudo, '1', 'asc', 1, 99999, intval($annee_selectionnee));
+    $toutes_operations = PiloteOperation::getOperationsForLogin($pseudo, 'date_operation', 'asc', 1, 99999, intval($annee_selectionnee));
 } else {
-    $toutes_operations = PiloteOperation::getOperationsForLogin($pseudo, '1', 'asc', 1, 9999);
+    $toutes_operations = PiloteOperation::getOperationsForLogin($pseudo, 'date_operation', 'asc', 1, 9999);
 }
 foreach ($toutes_operations as $operation) {
     $solde += $operation->montant_operation;

@@ -193,6 +193,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         // L'adresse sur 2 lignes est séparée par @#@
                         list($addr1, $addr2) = preg_split('/@#@/', utf8_encode(trim($line[4])));
                         $import_values = array(
+                            'id_adh' => '',
                             'pseudo_adh' => $line[1],
                             'login_adh' => $line[1],
                             'nom_adh' => utf8_encode(trim($line[2])),
@@ -229,9 +230,18 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         if (strlen($adherent->login) > 0) {
                             $import_values['login_adh'] = $adherent->login;
                         }
+
+                        //les champs désactivés (les mêmes que sur self_adherent) - optionnel (à priori)
+                        $inactifs = array(); // $pilote->disabled_fields + $pilote->edit_disabled_fields;
+                        //les champs requis - optionnel (à priori) - gérés par une classe à part
+                        $fc = new Galette\Entity\FieldsConfig(Galette\Entity\Adherent::TABLE, $adherent->fields);
+                        $requis = $fc->getRequired();
+
                         if (strlen($adherent->password) <= 0) {
                             $import_values['mdp_adh'] = $line[1];
                             $import_values['mdp_adh2'] = $line[1];
+                        } else {
+                            unset($requis['mdp_adh']);
                         }
                         if (strlen($adherent->creation_date) == 0) {
                             $dt = new DateTime();
@@ -240,11 +250,6 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                             $import_values['date_crea_adh'] = $adherent->creation_date;
                         }
 
-                        //les champs désactivés (les mêmes que sur self_adherent) - optionnel (à priori)
-                        $inactifs = array(); // $pilote->disabled_fields + $pilote->edit_disabled_fields;
-                        //les champs requis - optionnel (à priori) - gérés par une classe à part
-                        $required = new Galette\Entity\Required();
-                        $requis = $required->getRequired();
                         //stockage des valeurs dans l'objet et vérifications (formatage des dates, etc, etc)
                         $ok = $adherent->check($import_values, $requis, $inactifs);
 

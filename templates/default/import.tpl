@@ -15,7 +15,7 @@
 {if !$fichier_deja_importe} 
             <p>
             <span class="bline">{_T string="IMPORT.CHOIX FICHIER"}</span>
-            <input type="file" name="pilote_import_file">
+            <input type="file" name="pilote_import_file" size="40">
             </p>
             <p>
             <span class="bline"><label for="filter">{_T string="IMPORT.FILTRER IMPORT"}</label></span>
