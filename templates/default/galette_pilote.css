@@ -1,5 +1,6 @@
 #ajout_avion, #mot_de_passe, #calendrier, #script_sql, #import, #parametre, #sauver, 
-#annuler, #reserver, #supprimer, #ajout_instructeur, #pdf, #dispo, #zoom, .button{
+#annuler, #reserver, #supprimer, #ajout_instructeur, #pdf, #dispo, #zoom, #cloner,
+.button{
     background-position: 10px 50%, 50% 50% !important;
     background-repeat: no-repeat, repeat !important;
     padding-left: 2em !important;
@@ -101,6 +102,13 @@
 }
 #zoom.ui-state-hover {
     background-image: url(../../picts/zoom.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
+}
+
+#cloner {
+    background-image: url(../../picts/copy.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_e6e6e6_1x400.png);
+}
+#cloner.ui-state-hover {
+    background-image: url(../../picts/copy.png), url(../../../../templates/default/jquery-ui/images/ui-bg_glass_75_ffb619_1x400.png);
 }
 
 #tooltip {

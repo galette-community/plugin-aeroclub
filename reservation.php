@@ -75,6 +75,13 @@ if (array_key_exists('supprimer', $_POST)) {
 }
 
 /**
+ * Copie de la réservation 
+ */
+if (array_key_exists('cloner', $_POST)) {
+    header('Location: reservation.php?jour=' . $_POST['resa_jour'] . '&avion_id=' . $_POST['avion_id'] . '&clone_resa_id=' . $_POST['resa_id']);
+}
+
+/**
  * Enregistrement de la réservation
  */
 if (array_key_exists('reserver', $_POST)) {
@@ -363,6 +370,7 @@ $tpl->assign('dessine_reservation', $dessine_reservation);
 $tpl->assign('resa_ok', $resa_ok);
 $tpl->assign('resa_annule', $resa_annule);
 $tpl->assign('resa_supprime', $resa_supprime);
+$tpl->assign('resa_dupliquer', false);
 $tpl->assign('erreur_resa', false);
 
 // Indique si le pilote connecté est un instructeur
@@ -436,6 +444,9 @@ if ($resa_jour != null || $resa_id != null || $clone_resa_id != null) {
     // Si un ID de réservation est indiquée, on la charge
     if ($resa_id != null || $clone_resa_id != null) {
         $resa = $resa_id != null ? new PiloteReservation(intval($resa_id)) : new PiloteReservation(intval($clone_resa_id), true);
+        if ($clone_resa_id != null) {
+            $tpl->assign('resa_dupliquer', true);
+        }
         $resa_heure = substr($resa->heure_debut, 11, 5);
         $resa_jour = substr($resa->heure_debut, 0, 10);
 

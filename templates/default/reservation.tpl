@@ -13,6 +13,11 @@
         <h1>{_T string="RESERVATION.RESA SUPPRIME"}</h1>
     </div>
 {/if}
+{if $resa_dupliquer}
+    <div id="infobox">
+        <h1>{_T string="RESERVATION.DUPLICATION"}</h1>
+    </div>
+{/if}
 {if $erreur_resa}
     <div id="errorbox">
         <h1>
@@ -357,6 +362,7 @@ setInterval("clignotement()", 500);
     <input type="submit" id="reserver" name="reserver" value="{_T string="RESERVATION.RESERVER"}">
 {else}
     <input type="submit" id="sauver" name="reserver" value="{_T string="RESERVATION.SAUVER"}">
+    <input type="submit" id="cloner" name="cloner" value="{_T string="RESERVATION.CLONER"}">
     <input type="submit" id="supprimer" name="supprimer" value="{_T string="RESERVATION.SUPPRIMER"}">
 {/if}
     <input type="submit" id="annuler" name="annuler" value="{_T string="RESERVATION.ANNULER"}" onclick="document.location = 'reservation.php?jour={$resa_jour}&avion_id={$resa->id_avion}'; return false;">
