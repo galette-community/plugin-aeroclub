@@ -142,7 +142,7 @@ class PiloteAdherentComplement {
      * 
      * @return Un complément d'adhérient vide si non existant ou le complément avec ses données
      */
-    public function findByLogin($id) {
+    public static function findByLogin($id) {
         global $zdb;
 
         try {
