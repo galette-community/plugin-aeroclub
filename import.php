@@ -191,7 +191,12 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         $adherent = new Galette\Entity\Adherent();
                         $adherent->loadFromLoginOrMail($line[1]);
                         // L'adresse sur 2 lignes est séparée par @#@
-                        list($addr1, $addr2) = preg_split('/@#@/', utf8_encode(trim($line[4])));
+                        $addr2 = '';
+                        if (strpos($line[4], '@#@') !== false) {
+                            list($addr1, $addr2) = preg_split('/@#@/', utf8_encode(trim($line[4])));
+                        } else {
+                            $addr1 = trim($line[4]);
+                        }
                         $import_values = array(
                             'id_adh' => '',
                             'pseudo_adh' => $line[1],
@@ -272,8 +277,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         /**
                          * Création ou mise à jour du complément pilote spécifique
                          */
-                        $complement = new PiloteAdherentComplement();
-                        $complement = $complement->findByLogin($adherent->id);
+                        $complement = PiloteAdherentComplement::findByLogin($adherent->id);
 
                         $complement->id_adherent = $adherent->id;
                         $complement->tel_travail = trim($line[12]);
@@ -315,12 +319,11 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         // On vérifie qu'on a déjà un ID pour notre LOGIN
                         $code_membre = $line[2];
                         if (!array_key_exists($code_membre, $adherents_login_id)) {
-                            $temp_adherent = new Galette\Entity\Adherent($code_membre);
-                            $adherents_login_id[$code_membre] = $temp_adherent->id;
+                            //$temp_adherent = new Galette\Entity\Adherent($code_membre);
+                            //$adherents_login_id[$code_membre] = $temp_adherent->id;
                         }
-
                         // On stocke les infos dans l'objet
-                        $operation->id_adherent = $adherents_login_id[$code_membre];
+                        $operation->id_adherent = intval($adherents_login_id[$code_membre]);
                         $operation->date_operation = dateAccessToString($line[3], true);
                         $operation->immatriculation = utf8_encode($line[4]);
                         if (strlen($line[5] > 2)) {
@@ -349,7 +352,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                          */
                         if ($operation->type_operation == PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COTISATION_SECTION)) {
                             // Récupération de l'ID adhérent
-                            $id_adh = $operation->id_adherent;
+                            $id_adh = intval($adherents_login_id[$code_membre]);
 
                             // Préparation des valeurs à insérer dans la table contributions pour la cotisation
                             $values = array(
@@ -378,7 +381,22 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                                     'date_echeance' => substr(dateAccessToString($line[3], true), 0, 4) . '-12-31',
                                     'activite_adh' => true
                                 );
-                                $zdb->db->update(PREFIX_DB . Galette\Entity\Adherent::TABLE, $values, Galette\Entity\Adherent::PK . ' = ' . $id_adh);
+                                $zdb->db->getProfiler()->setEnabled(true);
+                                try {
+                                    $zdb->db->update(PREFIX_DB . Galette\Entity\Adherent::TABLE, $values, Galette\Entity\Adherent::PK . ' = ' . $id_adh);
+                                } catch (Exception $e) {
+                                    Analog\Analog::log(
+                                            'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
+                                            $e->getTraceAsString(), Analog\Analog::ERROR
+                                    );
+                                    $query = $zdb->db->getProfiler()->getLastQueryProfile();
+                                    Analog\Analog::log(
+                                            'CODE MEMBRE : ' . $code_membre .
+                                            ' / ID : ' . $adherents_login_id[$code_membre] .
+                                            ' / ERREUR IMPORT ECHEANCE: ' . $query->getQuery(), Analog\Analog::ERROR
+                                    );
+                                }
+                                $zdb->db->getProfiler()->setEnabled(false);
                             }
                         }
 
@@ -460,6 +478,10 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
     fwrite($f_log, date("j M H:i:s") . " | MEMBRES MIS A JOUR : " . $nb_adherent_modifies . " \n");
     fwrite($f_log, date("j M H:i:s") . " | NOUVELLES OPERATIONS : " . $nb_operation_creees . " \n");
     fwrite($f_log, date("j M H:i:s") . " | OPERATIONS MISES A JOUR : " . $nb_operation_modifiees . " \n");
+
+    foreach ($adherents_login_id as $k => $v) {
+        Analog\Analog::log('LOGINS ' . $k . ' => ' . $v, Analog\Analog::ERROR);
+    }
 
     if (strlen($code_tresorier) > 1) {
         try {
