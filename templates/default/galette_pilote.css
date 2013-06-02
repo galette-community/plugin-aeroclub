@@ -120,3 +120,8 @@
     font-size:0.8em;
     max-width:250px;
 }
+.pilote_doc_frame {
+    border: 0;
+    width: 100%;
+    height: 600px;
+}

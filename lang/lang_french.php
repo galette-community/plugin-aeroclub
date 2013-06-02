@@ -41,6 +41,8 @@ $lang['MENU.GRAPHIQUE'] = 'Mon graphique';
 $lang['MENU.FICHE PILOTE'] = 'Ma fiche pilote';
 $lang['MENU.SITUATION AERO'] = 'Ma situation aéronautique';
 $lang['MENU.MOT DE PASSE'] = 'Mon mot de passe';
+$lang['MENU.DOCUMENTS 1']='Documents (iframe)';
+$lang['MENU.DOCUMENTS 2']='Documents (fullscreen)';
 $lang['MENU STAFF.HEURES AVION'] = 'Heures de vol aéronefs';
 $lang['MENU STAFF.HEURES PILOTE'] = 'Heures de vol pilotes';
 $lang['MENU STAFF.SOLDES PILOTES'] = 'Soldes pilotes';
@@ -528,6 +530,11 @@ $lang['SOLDES PILOTES.TOUS'] = 'Tous';
  * VERSION.TPL 
  */
 $lang['VERSION.PAGE TITLE'] = 'Notes de versions';
+
+/**
+ * DOCUMENTS_FRAME.TPL
+ */
+$lang['DOCUMENTS IFRAME.PAGE TITLE'] = 'Documentation aéroclub';
 
 /**
  * PiloteAdherentComplement.class.php
