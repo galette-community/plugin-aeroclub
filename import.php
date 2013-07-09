@@ -41,6 +41,7 @@ function dateAccessToString($str, $sql = false) {
     if (strlen($str) < 4) {
         return $sql ? new Zend_Db_Expr('NULL') : '';
     }
+    
 
     // j = Jour du mois sans les zéros initiaux
     // n = Mois sans les zéros initiaux
