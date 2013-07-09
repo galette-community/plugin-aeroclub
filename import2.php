@@ -41,7 +41,6 @@ function dateAccessToString($str, $sql = false) {
     if (strlen($str) < 4) {
         return $sql ? new Zend_Db_Expr('NULL') : '';
     }
-    
 
     // j = Jour du mois sans les zéros initiaux
     // n = Mois sans les zéros initiaux
@@ -320,9 +319,10 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         // On vérifie qu'on a déjà un ID pour notre LOGIN
                         $code_membre = $line[2];
                         if (!array_key_exists($code_membre, $adherents_login_id)) {
-                            //$temp_adherent = new Galette\Entity\Adherent($code_membre);
-                            //$adherents_login_id[$code_membre] = $temp_adherent->id;
+                            $temp_adherent = new Galette\Entity\Adherent($code_membre);
+                            $adherents_login_id[$code_membre] = intval($temp_adherent->id);
                         }
+
                         // On stocke les infos dans l'objet
                         $operation->id_adherent = intval($adherents_login_id[$code_membre]);
                         $operation->date_operation = dateAccessToString($line[3], true);
@@ -352,29 +352,23 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                          * On stocke aussi dans la table contribution
                          */
                         if ($operation->type_operation == PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COTISATION_SECTION)) {
-                            // Récupération de l'ID adhérent
-                            $id_adh = intval($adherents_login_id[$code_membre]);
-
+                            $contrib = new Galette\Entity\Contribution();
                             // Préparation des valeurs à insérer dans la table contributions pour la cotisation
                             $values = array(
-                                'id_adh' => $id_adh,
-                                'id_type_cotis' => 1,
                                 'montant_cotis' => 0 - doubleval($operation->montant_operation),
-                                'info_cotis' => $operation->libelle_operation,
+                                \Galette\Entity\ContributionsTypes::PK => 1,
                                 'date_enreg' => dateAccessToString($line[3], true),
                                 'date_debut_cotis' => substr(dateAccessToString($line[3], true), 0, 4) . '-01-01',
-                                'date_fin_cotis' => substr(dateAccessToString($line[3], true), 0, 4) . '-12-31'
+                                'date_fin_cotis' => substr(dateAccessToString($line[3], true), 0, 4) . '-12-31',
+                                'type_paiement_cotis' => intval($_POST['payment_type']),
+                                'info_cotis' => $operation->libelle_operation,
+                                \Galette\Entity\Adherent::PK => $operation->id_adherent,
                             );
+                            // Copie des valeurs dans la contribution
+                            $contrib->check($values, array(), array());
                             // Insert dans la table des contributions
-                            try {
-                                $zdb->db->insert(PREFIX_DB . Galette\Entity\Contribution::TABLE, $values);
-                            } catch (Exception $e) {
-                                Analog\Analog::log(
-                                        'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                                        $e->getTraceAsString(), Analog\Analog::ERROR
-                                );
-                            }
-
+                            $contrib->store();
+                            
                             // Si la date d'opération est l'année en cours
                             // On met à jour la date_echeance de l'adhérent à la fin de l'année
                             if (intval(substr(dateAccessToString($line[3], true), 0, 4)) == $exercice_courant) {
@@ -382,7 +376,6 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                                     'date_echeance' => substr(dateAccessToString($line[3], true), 0, 4) . '-12-31',
                                     'activite_adh' => true
                                 );
-                                $zdb->db->getProfiler()->setEnabled(true);
                                 try {
                                     $zdb->db->update(PREFIX_DB . Galette\Entity\Adherent::TABLE, $values, Galette\Entity\Adherent::PK . ' = ' . $id_adh);
                                 } catch (Exception $e) {
@@ -390,14 +383,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                                             'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
                                             $e->getTraceAsString(), Analog\Analog::ERROR
                                     );
-                                    $query = $zdb->db->getProfiler()->getLastQueryProfile();
-                                    Analog\Analog::log(
-                                            'CODE MEMBRE : ' . $code_membre .
-                                            ' / ID : ' . $adherents_login_id[$code_membre] .
-                                            ' / ERREUR IMPORT ECHEANCE: ' . $query->getQuery(), Analog\Analog::ERROR
-                                    );
                                 }
-                                $zdb->db->getProfiler()->setEnabled(false);
                             }
                         }
 
@@ -479,10 +465,6 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
     fwrite($f_log, date("j M H:i:s") . " | MEMBRES MIS A JOUR : " . $nb_adherent_modifies . " \n");
     fwrite($f_log, date("j M H:i:s") . " | NOUVELLES OPERATIONS : " . $nb_operation_creees . " \n");
     fwrite($f_log, date("j M H:i:s") . " | OPERATIONS MISES A JOUR : " . $nb_operation_modifiees . " \n");
-
-    foreach ($adherents_login_id as $k => $v) {
-        Analog\Analog::log('LOGINS ' . $k . ' => ' . $v, Analog\Analog::ERROR);
-    }
 
     if (strlen($code_tresorier) > 1) {
         try {
