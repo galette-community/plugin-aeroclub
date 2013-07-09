@@ -22,7 +22,6 @@
         <td width="60" align="right"><a href="?jour={$semaine_apres}" title="{_T string="RESERVATION.SEM SUIV"}"><img src="picts/next_32.png" border="0"></a></td>
     </tr>
 </table>
-</get>
 
 <p></p>
 

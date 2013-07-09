@@ -81,6 +81,7 @@ if (array_key_exists('cloner', $_POST)) {
     header('Location: reservation.php?jour=' . $_POST['resa_jour'] . '&avion_id=' . $_POST['avion_id'] . '&clone_resa_id=' . $_POST['resa_id']);
 }
 
+$reservation = null;
 /**
  * Enregistrement de la réservation
  */
@@ -126,8 +127,7 @@ if (array_key_exists('reserver', $_POST)) {
     // Vérification avion est dispo
     $dispos = PiloteAvionDispo::getDisponibilitesPourAvion(intval($reservation->id_avion));
     foreach ($dispos as $d) {
-        if (dateIHMtoSQL($d->date_debut) <= dateIHMtoSQL($_POST['resa_jour_debut'])
-                && dateIHMtoSQL($_POST['resa_jour_debut']) <= dateIHMtoSQL($d->date_fin)) {
+        if (dateIHMtoSQL($d->date_debut) <= dateIHMtoSQL($_POST['resa_jour_debut']) && dateIHMtoSQL($_POST['resa_jour_debut']) <= dateIHMtoSQL($d->date_fin)) {
             $ok = false;
             $msg_erreur[] = 'L\'avion n\'est pas réservable du ' . $d->date_debut . ' au ' . $d->date_fin . '.';
         }
@@ -135,9 +135,7 @@ if (array_key_exists('reserver', $_POST)) {
     // Vérification chevauchement avec une autre réservation
     $resas = PiloteReservation::getReservationsPourAvion(intval($reservation->id_avion), dateIHMtoSQL($_POST['resa_jour_debut']), dateIHMtoSQL($_POST['resa_jour_debut']));
     foreach ($resas as $r) {
-        if ($r->reservation_id != $reservation->reservation_id
-                && $r->heure_debut < $reservation->heure_fin
-                && $reservation->heure_debut < $r->heure_fin) {
+        if ($r->reservation_id != $reservation->reservation_id && $r->heure_debut < $reservation->heure_fin && $reservation->heure_debut < $r->heure_fin) {
             $ok = false;
             $msg_erreur[] = 'L\'avion est déjà réservé par ' . $r->nom . ' de ' .
                     substr($r->heure_debut, 11, 5) .
@@ -203,6 +201,7 @@ for ($i = 0; $i < 7; $i++) {
     $jours[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = $nom_jour . ' ' . $no_jour . ' ' . $nom_mois . '<br/>#' . $num_jour_ann;
 
     $levercoucher = PiloteReservation::getLeverCoucher(date('j', strtotime('+' . $i . ' days', strtotime($depart))), date('n', strtotime('+' . $i . ' days', strtotime($depart))), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LATITUDE)), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LONGITUDE)));
+    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = new stdClass();
     $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->lever = $levercoucher['lever'];
     $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->coucher = $levercoucher['coucher'];
 }
@@ -241,8 +240,7 @@ foreach ($jours as $jourCode => $jourIHM) {
         // Sont interdits les samedi (jour 6) et dimanche (jour 0) à partir de l'heure du paramètre respectif
         $reservations[$jourIHM][$h]->interdit = false;
         $reservations[$jourIHM][$h]->cliquable = date('Y-m-d', strtotime($jourCode)) . ' ' . $h > date('Y-m-d H:i');
-        if ((intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_SAMEDI) && date('w', strtotime($jourCode)) == 6)
-                || (intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_DIMANCHE) && date('w', strtotime($jourCode)) == 0)) {
+        if ((intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_SAMEDI) && date('w', strtotime($jourCode)) == 6) || (intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_DIMANCHE) && date('w', strtotime($jourCode)) == 0)) {
             $reservations[$jourIHM][$h]->interdit = true;
             if (strtolower(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AUTORISER_RESA_INTERDIT)) != 'o') {
                 $reservations[$jourIHM][$h]->cliquable = false;
@@ -255,8 +253,7 @@ foreach ($jours as $jourCode => $jourIHM) {
         // Vérification de la dispo pour rendre un avion non dispo
         // sur 1 jour ou plus
         foreach ($liste_dispos as $dispo) {
-            if (strtotime(dateIHMtoSQL($dispo->date_debut)) <= strtotime($jourCode)
-                    && strtotime($jourCode) <= strtotime(dateIHMtoSQL($dispo->date_fin))) {
+            if (strtotime(dateIHMtoSQL($dispo->date_debut)) <= strtotime($jourCode) && strtotime($jourCode) <= strtotime(dateIHMtoSQL($dispo->date_fin))) {
                 $reservations[$jourIHM][$h]->interdit = true;
                 $reservations[$jourIHM][$h]->cliquable = false;
             }
@@ -286,9 +283,7 @@ foreach ($jours as $jourCode => $jourIHM) {
                         . ($resa->id_instructeur != '' ? "<br/><img src=\"picts/instructeur.png\" title=\"Vol avec instructeur\"> " . $liste_instructeurs[$resa->id_instructeur]->nom : "");
                 $reservations[$jourIHM][$h]->editable = $resa->id_adherent == $login->id || $login->isAdmin();
                 // Si instructeur, on a le droit de modifier les résa dont on est instructeur
-                if ($is_instructeur && $resa->id_instructeur != ''
-                        && ($liste_instructeurs[$resa->id_instructeur]->adherent_id == $login->id
-                        || PiloteParametre::getValeurParametre(PiloteParametre::PARAM_INSTRUCTEUR_RESERVATION) == '1' )) {
+                if ($is_instructeur && $resa->id_instructeur != '' && ($liste_instructeurs[$resa->id_instructeur]->adherent_id == $login->id || PiloteParametre::getValeurParametre(PiloteParametre::PARAM_INSTRUCTEUR_RESERVATION) == '1' )) {
                     $reservations[$jourIHM][$h]->editable = true;
                 }
                 // On redéfinit "cliquable" pour autoriser la modification
@@ -298,6 +293,10 @@ foreach ($jours as $jourCode => $jourIHM) {
                 // Définition infos résa
                 $reservations[$jourIHM][$h]->resa_id = $resa->reservation_id;
                 $reservations[$jourIHM][$h]->est_resa_club = $resa->est_reservation_club;
+                // Si c'est une résa club, un membre staff peut la modifier
+                if ($resa->est_reservation_club && ($login->isStaff() || $login->isAdmin())) {
+                    $reservations[$jourIHM][$h]->editable = true;
+                }
 
                 // Calcul du rowspan
                 // 1 case = 30 min
@@ -309,8 +308,7 @@ foreach ($jours as $jourCode => $jourIHM) {
             }
             // Si la date de la case est entre la date de début et de fin de la résa
             // on n'affiche pas la case (à cause du rowspan)
-            if (date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' > $resa->heure_debut
-                    && date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' < $resa->heure_fin) {
+            if (date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' > $resa->heure_debut && date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' < $resa->heure_fin) {
                 $reservations[$jourIHM][$h]->libre = false;
                 $reservations[$jourIHM][$h]->masquer = true;
             }
@@ -389,6 +387,7 @@ if ($login->isAdmin() || $is_instructeur) {
                 ->order('nom_adh');
         $result = $select->query()->fetchAll();
         foreach ($result as $row) {
+            $liste_adherents[$row->id_adh] = new stdClass();
             $liste_adherents[$row->id_adh]->key = $row->id_adh . '$$$' . $row->nom_adh . ' ' . $row->prenom_adh . '$$$' . $row->email_adh . '$$$' . $row->gsm_adh;
             $liste_adherents[$row->id_adh]->value = $row->nom_adh . ' ' . $row->prenom_adh . ' (' . $row->login_adh . ')';
         }
@@ -411,8 +410,7 @@ if ($resa_jour != null || $resa_id != null || $clone_resa_id != null) {
     if (strtolower(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_BLOCAGE_ACTIF)) != 'd') {
 
         // Warning si compte négatif
-        if (strtolower(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_BLOCAGE_ACTIF)) == 'w'
-                && PiloteOperation::getSoldeCompteForLogin($login->login) < 0) {
+        if (strtolower(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_BLOCAGE_ACTIF)) == 'w' && PiloteOperation::getSoldeCompteForLogin($login->login) < 0) {
             $aff_msg_warning = true;
             $tpl->assign('msg_warning', PiloteParametre::getValeurParametre(PiloteParametre::PARAM_BLOCAGE_MESSAGE_WARNING));
         }
@@ -461,9 +459,11 @@ if ($resa_jour != null || $resa_id != null || $clone_resa_id != null) {
             $has_modif_right = true;
         }
         // Instructeur de la réservation
-        if ($is_instructeur && $resa->id_instructeur != ''
-                && ($liste_instructeurs[$resa->id_instructeur]->adherent_id == $login->id
-                || PiloteParametre::getValeurParametre(PiloteParametre::PARAM_INSTRUCTEUR_RESERVATION) == '1')) {
+        if ($is_instructeur && $resa->id_instructeur != '' && ($liste_instructeurs[$resa->id_instructeur]->adherent_id == $login->id || PiloteParametre::getValeurParametre(PiloteParametre::PARAM_INSTRUCTEUR_RESERVATION) == '1')) {
+            $has_modif_right = true;
+        }
+        // Réservation est réservation club et user est Staff/Admin
+        if ($resa->est_reservation_club && ($login->isAdmin() || $login->isStaff())) {
             $has_modif_right = true;
         }
         // Si on n'a pas les droits, on ne rentre pas en édition

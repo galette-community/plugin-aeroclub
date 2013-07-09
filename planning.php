@@ -85,6 +85,7 @@ for ($i = 0; $i < 7; $i++) {
 
     // Calcul du levé/couché
     $levercoucher = PiloteReservation::getLeverCoucher(date('j', strtotime('+' . $i . ' days', strtotime($depart))), date('n', strtotime('+' . $i . ' days', strtotime($depart))), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LATITUDE)), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LONGITUDE)));
+    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = new stdClass();
     $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->lever = $levercoucher['lever'];
     $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->coucher = $levercoucher['coucher'];
 }
@@ -112,7 +113,9 @@ foreach ($liste_avions as $avion) {
     $liste_dispos[$avion->avion_id] = PiloteAvionDispo::getDisponibilitesPourAvion($avion->avion_id);
 }
 
+// Instructeurs: liste + connecté
 $liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 1, 9999);
+$is_instructeur = PiloteInstructeur::isPiloteInstructeur($login->login);
 
 /**
  * Remplissage du tableau par avions

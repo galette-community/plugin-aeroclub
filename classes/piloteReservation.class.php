@@ -309,9 +309,7 @@ class PiloteReservation {
      * @return mixed Array avec les valeurs dans les clefs ['lever'] et ['coucher'] 
      */
     public static function getLeverCoucher($jour = null, $mois = null, $La = 48.833, $Lo = -2.333) {
-        if ($fh == "") {
-            $fh = date("H") - gmdate("H");
-        }
+        $fh = date("H") - gmdate("H");
         if (is_null($jour)) {
             $jour = date("d");
         }
@@ -328,8 +326,7 @@ class PiloteReservation {
         //Hauteur du soleil au lever et au coucher
         $dr = $PI / 180;
         $hr = $PI / 12;
-        $ht = (-40 / 60);
-        $ht = $ht * $dr;
+        $ht = (-40 / 60) * $dr;
         $La = $La * $dr;
         $Lo = $Lo * $dr;
         //Date
@@ -389,11 +386,7 @@ class PiloteReservation {
         if (strlen($Pm) < 2) {
             $Pm = "0" . $Pm;
         }
-        if ($CalculSol == "") {
-            $lev = $hs . ":" . $Pm;
-        } else {
-            $lev = "---";
-        }
+        $lev = $hs . ":" . $Pm;
         //Coucher du soleil
         $Pm = $h + $fh + ($ET + $ah) / $hr;
         if ($Pm > 24) {
@@ -410,11 +403,7 @@ class PiloteReservation {
         if (strlen($Pm) < 2) {
             $Pm = "0" . $Pm;
         }
-        if ($CalculSol == "") {
-            $couch = $hs . ":" . $Pm;
-        } else {
-            $couch = "---";
-        }
+        $couch = $hs . ":" . $Pm;
         return array(
             'lever' => $lev,
             'coucher' => $couch,

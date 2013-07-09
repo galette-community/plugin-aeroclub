@@ -28,7 +28,9 @@
  * @since     Available since 0.7
  */
 
-define('PILOTE_PREFIX', 'pilote_');
+if (!defined('PILOTE_PREFIX')) {
+    define('PILOTE_PREFIX', 'pilote_');
+}
 define('PILOTE_SMARTY_PREFIX', 'plugins|pilote');
 
 require_once 'classes/piloteAdherentComplement.class.php';
@@ -41,5 +43,4 @@ require_once 'classes/piloteAvionPicture.class.php';
 require_once 'classes/piloteInstructeur.class.php';
 require_once 'classes/piloteAvionDispo.class.php';
 require_once 'classes/pilotePDF.class.php';
-
 ?>
