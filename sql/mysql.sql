@@ -129,15 +129,15 @@ CREATE TABLE IF NOT EXISTS galette_pilote_pictures (
 DROP TABLE IF EXISTS galette_pilote_reservations;
 CREATE TABLE IF NOT EXISTS galette_pilote_reservations (
   reservation_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-  id_adherent int(10) unsigned NOT NULL,
+  id_adherent int(10) unsigned DEFAULT NULL,
   id_avion int(10) unsigned NOT NULL,
   id_instructeur int(10) unsigned DEFAULT NULL,
   heure_debut datetime NOT NULL,
   heure_fin datetime NOT NULL,
-  nom varchar(60) COLLATE utf8_unicode_ci NOT NULL,
+  nom varchar(60) COLLATE utf8_unicode_ci DEFAULT NULL,
   destination varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  email_contact varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  no_portable varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  email_contact varchar(30) COLLATE utf8_unicode_ci DEFAULT NULL,
+  no_portable varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   commentaires varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   est_reservation_club tinyint(1) NOT NULL DEFAULT '0',
   est_rapproche tinyint(1) NOT NULL DEFAULT '0',
@@ -190,6 +190,8 @@ ALTER TABLE galette_pilote_instructeurs
 
 ALTER TABLE galette_pilote_operations
   ADD CONSTRAINT FK_pilote_operations_1 FOREIGN KEY (id_adherent) REFERENCES galette_adherents (id_adh) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE galette_pilote_operations ADD INDEX (immatriculation) ;
 
 
 ALTER TABLE galette_pilote_reservations
@@ -261,3 +263,7 @@ VALUES ('BLOCAGE_MESSAGE_WARNING', 'Message de warning si blocage est en mode Wa
 INSERT IGNORE INTO galette_pilote_parametres
 (code, libelle, est_date, valeur_date, est_texte, valeur_texte, est_numerique, nombre_decimale, valeur_numerique, date_creation, date_modification)
 VALUES ('BLOCAGE_MESSAGE_BLOQUE', 'Message de blocage si blocage est en mode Blocage (empêche réservation)', 0, null, 1, 'La date de validitée de votre license ou visite médicale est dépassée. Vous ne pouvez pas effectuer de réservation.', 0, null, null, NOW(), NOW()); 
+
+INSERT IGNORE INTO galette_pilote_parametres
+(code, libelle, est_date, valeur_date, est_texte, valeur_texte, est_numerique, nombre_decimale, valeur_numerique, date_creation, date_modification)
+VALUES ('INSTRUCTEUR_RESA', 'Indique si les instructeurs peuvent modifier toutes les réservations (0 = non, 1 = oui)', 0, null, 0, null, 1, 0, 0, NOW(), NOW()); 
