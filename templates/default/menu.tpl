@@ -11,7 +11,6 @@
    <li{if $PAGENAME eq "fiche_pilote.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}fiche_pilote.php">{_T string="MENU.FICHE PILOTE"}</a></li>
    <li{if $PAGENAME eq "situation_aero.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}situation_aero.php">{_T string="MENU.SITUATION AERO"}</a></li>
    <li{if $PAGENAME eq "documents_frame.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}documents_frame.php">{_T string="MENU.DOCUMENTS 1"}</a></li>
-   <li{if $PAGENAME eq "foo.php"} class="selected"{/if}><a href="{$galette_base_path}{$pilote_dir}documents/">{_T string="MENU.DOCUMENTS 2"}</a></li>
 </ul>
 {/if}
 {if $is_instructeur eq 1 || $login->isStaff() || $login->isAdmin()}
