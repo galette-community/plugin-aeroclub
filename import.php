@@ -358,8 +358,8 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                                 'montant_cotis' => 0 - doubleval($operation->montant_operation),
                                 \Galette\Entity\ContributionsTypes::PK => 1,
                                 'date_enreg' => dateAccessToString($line[3], true),
-                                'date_debut_cotis' => substr(dateAccessToString($line[3], true), 0, 4) . '-01-01',
-                                'date_fin_cotis' => substr(dateAccessToString($line[3], true), 0, 4) . '-12-31',
+                                'date_debut_cotis' => '01/01/' . substr(dateAccessToString($line[3], true), 0, 4),
+                                'date_fin_cotis' => '31/12/' . substr(dateAccessToString($line[3], true), 0, 4),
                                 'type_paiement_cotis' => intval($_POST['payment_type']),
                                 'info_cotis' => $operation->libelle_operation,
                                 \Galette\Entity\Adherent::PK => $operation->id_adherent,
@@ -368,7 +368,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                             $contrib->check($values, array(), array());
                             // Insert dans la table des contributions
                             $contrib->store();
-                            
+
                             // Si la date d'opération est l'année en cours
                             // On met à jour la date_echeance de l'adhérent à la fin de l'année
                             if (intval(substr(dateAccessToString($line[3], true), 0, 4)) == $exercice_courant) {
