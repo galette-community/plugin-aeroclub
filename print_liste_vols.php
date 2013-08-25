@@ -53,7 +53,7 @@ if ($login->isAdmin() && array_key_exists('pseudo', $_GET)) {
 $liste_operations = PiloteOperation::getVolsForLogin($pseudo, 'date_operation', 'asc', 1, 9999, intval($annee_selectionnee));
 
 
-$pdf = new PilotePDF('P', 'mm', 'A4', true, 'UTF-8');
+$pdf = new PilotePDF();
 
 // Set document information
 $pdf->SetTitle('Compte vol');

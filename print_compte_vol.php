@@ -72,7 +72,7 @@ foreach ($toutes_operations as $operation) {
 }
 
 
-$pdf = new PilotePDF('P', 'mm', 'A4', true, 'UTF-8');
+$pdf = new PilotePDF();
 
 // Set document information
 $pdf->SetTitle('Compte vol');
