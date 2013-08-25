@@ -20,15 +20,15 @@
     <p align="center">
         <input type="submit" id="zoom" name="zoom" value="Afficher">
     </p>
-    <table id="listing">
+    <table class="listing">
         <thead>
             <tr>
-                <th class="listing"></th>
-                <th class="listing"><a href="?actif={$actif}&negatif={$negatif}&tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th class="listing"><a href="?actif={$actif}&negatif={$negatif}&tri=prenom&direction={if $tri eq 'prenom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.PRENOM"}</a>{if $tri eq 'prenom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'prenom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th class="listing"><a href="?actif={$actif}&negatif={$negatif}&tri=pseudo&direction={if $tri eq 'pseudo' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.PSEUDO"}</a>{if $tri eq 'pseudo' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'pseudo' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th class="listing"><a href="?actif={$actif}&negatif={$negatif}&tri=email&direction={if $tri eq 'email' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.EMAIL"}</a>{if $tri eq 'email' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'email' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th class="listing"><a href="?actif={$actif}&negatif={$negatif}&tri=solde&direction={if $tri eq 'solde' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.SOLDE"}</a>{if $tri eq 'solde' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'solde' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th></th>
+                <th><a href="?actif={$actif}&negatif={$negatif}&tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th><a href="?actif={$actif}&negatif={$negatif}&tri=prenom&direction={if $tri eq 'prenom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.PRENOM"}</a>{if $tri eq 'prenom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'prenom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th><a href="?actif={$actif}&negatif={$negatif}&tri=pseudo&direction={if $tri eq 'pseudo' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.PSEUDO"}</a>{if $tri eq 'pseudo' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'pseudo' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th><a href="?actif={$actif}&negatif={$negatif}&tri=email&direction={if $tri eq 'email' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.EMAIL"}</a>{if $tri eq 'email' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'email' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th><a href="?actif={$actif}&negatif={$negatif}&tri=solde&direction={if $tri eq 'solde' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="SOLDES PILOTES.SOLDE"}</a>{if $tri eq 'solde' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'solde' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
             </tr>
         </thead>
         <tbody>

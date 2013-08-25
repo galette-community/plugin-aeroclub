@@ -48,19 +48,19 @@
 </div>
 
 <h3>{_T string="HISTO IMPORT.PAGE TITLE"}</h3>
-<table id="listing">
+<table class="listing">
     <thead>
         <tr>
-            <th class="listing"></th>
-            <th class="listing">Nom</th>
-            <th class="listing">Taille</th>
-            <th class="listing">Nb adhérents</th>
-            <th class="listing">Nb opérations</th>
-            <th class="listing">Lignes traitées</th>
-            <th class="listing">Lignes total</th>
-            <th class="listing">Importé le</th>
-            <th class="listing">Exporté le</th>
-            <th class="listing">Type</th>
+            <th></th>
+            <th>Nom</th>
+            <th>Taille</th>
+            <th>Nb adhérents</th>
+            <th>Nb opérations</th>
+            <th>Lignes traitées</th>
+            <th>Lignes total</th>
+            <th>Importé le</th>
+            <th>Exporté le</th>
+            <th>Type</th>
         </tr>
     </thead>
     <tbody>

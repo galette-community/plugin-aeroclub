@@ -24,20 +24,20 @@ function confirmerSuppression(nom, avion_id) {ldelim}
     return false;
 {rdelim}
 </script>
-<table id="listing">
+<table class="listing">
     <thead>
         <tr>
-            <th class="listing"><a href="?tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=marque_type&direction={if $tri eq 'marque_type' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.MARQUE TYPE"}</a>{if $tri eq 'marque_type' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'marque_type' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=type_aeronef&direction={if $tri eq 'type_aeronef' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.TYPE AERONEF"}</a>{if $tri eq 'type_aeronef' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'type_aeronef' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=immatriculation&direction={if $tri eq 'immatriculation' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.IMMAT"}</a>{if $tri eq 'immatriculation' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'immatriculation' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=couleur&direction={if $tri eq 'couleur' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.COULEUR"}</a>{if $tri eq 'couleur' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'couleur' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=nb_places&direction={if $tri eq 'nb_places' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.NB PLACES"}</a>{if $tri eq 'nb_places' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nb_places' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing">{_T string="LISTE AVIONS.DC"}</th>
-            <th class="listing">{_T string="LISTE AVIONS.REMORQUEUR"}</th>
-            <th class="listing">{_T string="LISTE AVIONS.RESERVABLE"}</th>
-            <th class="listing" colspan="2">{_T string="LISTE AVIONS.DATES"}</th>
-            <th class="listing" colspan="2"><a href="?tri=cout_horaire&direction={if $tri eq 'cout_horaire' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.COUT"}</a>{if $tri eq 'cout_horaire' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'cout_horaire' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=marque_type&direction={if $tri eq 'marque_type' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.MARQUE TYPE"}</a>{if $tri eq 'marque_type' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'marque_type' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=type_aeronef&direction={if $tri eq 'type_aeronef' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.TYPE AERONEF"}</a>{if $tri eq 'type_aeronef' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'type_aeronef' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=immatriculation&direction={if $tri eq 'immatriculation' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.IMMAT"}</a>{if $tri eq 'immatriculation' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'immatriculation' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=couleur&direction={if $tri eq 'couleur' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.COULEUR"}</a>{if $tri eq 'couleur' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'couleur' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=nb_places&direction={if $tri eq 'nb_places' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.NB PLACES"}</a>{if $tri eq 'nb_places' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nb_places' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th>{_T string="LISTE AVIONS.DC"}</th>
+            <th>{_T string="LISTE AVIONS.REMORQUEUR"}</th>
+            <th>{_T string="LISTE AVIONS.RESERVABLE"}</th>
+            <th colspan="2">{_T string="LISTE AVIONS.DATES"}</th>
+            <th colspan="2"><a href="?tri=cout_horaire&direction={if $tri eq 'cout_horaire' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE AVIONS.COUT"}</a>{if $tri eq 'cout_horaire' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'cout_horaire' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
         </tr>
     </thead>
     <tbody>

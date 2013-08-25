@@ -24,12 +24,12 @@ function confirmerSuppression(nom, instructeur_id) {ldelim}
     return false;
 {rdelim}
 </script>
-<table id="listing">
+<table class="listing">
     <thead>
         <tr>
-            <th class="listing"><a href="?tri=code&direction={if $tri eq 'code' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.CODE"}</a>{if $tri eq 'code' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'code' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing"><a href="?tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-            <th class="listing" colspan="2"><a href="?tri=code_adherent&direction={if $tri eq 'code_adherent' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.CODE ADHERENT"}</a>{if $tri eq 'code_adherent' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'code_adherent' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=code&direction={if $tri eq 'code' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.CODE"}</a>{if $tri eq 'code' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'code' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th><a href="?tri=nom&direction={if $tri eq 'nom' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.NOM"}</a>{if $tri eq 'nom' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+            <th colspan="2"><a href="?tri=code_adherent&direction={if $tri eq 'code_adherent' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="LISTE INSTRUCTEURS.CODE ADHERENT"}</a>{if $tri eq 'code_adherent' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'code_adherent' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
         </tr>
         </tr>
     </thead>

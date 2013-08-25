@@ -89,28 +89,36 @@ setInterval("clignotement()", 500);
     DEBUT TABLE DU DETAIL DE LA RESERVATION POUR UN AVION SUR TOUTE LA SEMAINE
 *}
 {if $dessine_semaine}
-<table id="listing">
-    {* ENTETE : LIENS AVANT + ARRIERE + DATES DE LA SEMAINE + BOITE SAUT RAPIDE *}
-    <caption class="ui-state-active ui-corner-top">
-        <table align="center">
-            <tr>
-                <td width="60"><a href="?jour={$semaine_avant}&avion_id={$avion_id}" title="{_T string="RESERVATION.SEM PREC"}"><img src="picts/previous_32.png" border="0"></a></td>
-                <td align="center">
-                    {_T string="RESERVATION.SEMAINE"} {$numero_semaine} / {$annee}
-                    <br/>{$debut_semaine} - {$fin_semaine}
-                    <br/>{_T string="RESERVATION.ALLER"} : <input type="text" size="8" id="aller_date" value="{$jour_selectionne_IHM}">
-                </td>
-                <td width="60" align="right"><a href="?jour={$semaine_apres}&avion_id={$avion_id}" title="{_T string="RESERVATION.SEM SUIV"}"><img src="picts/next_32.png" border="0"></a></td>
-            </tr>
-        </table>
-    </caption>
-    {* FIN ENTETE *}
+{* ENTETE : LIENS AVANT + ARRIERE + DATES DE LA SEMAINE + BOITE SAUT RAPIDE *}
+<table align="center">
+    <tr>
+        <td width="60">
+            <a href="?jour={$semaine_avant}&avion_id={$avion_id}" title="{_T string="RESERVATION.SEM PREC"}">
+                <img src="picts/previous_32.png" border="0">
+            </a>
+        </td>
+        <td align="center">
+            {_T string="RESERVATION.SEMAINE"} {$numero_semaine} / {$annee}
+            <br/>{$debut_semaine} - {$fin_semaine}
+            <br/>{_T string="RESERVATION.ALLER"} : <input type="text" size="8" id="aller_date" value="{$jour_selectionne_IHM}">
+        </td>
+        <td width="60" align="right">
+            <a href="?jour={$semaine_apres}&avion_id={$avion_id}" title="{_T string="RESERVATION.SEM SUIV"}">
+                <img src="picts/next_32.png" border="0">
+            </a>
+        </td>
+    </tr>
+</table>
+<p>
+</p>
+{* FIN ENTETE *}
+<table class="listing">
     {* LISTE DES JOURS AFFICHES DE LA SEMAINE *}
     <thead>
         <tr>
             <th></th>
 {foreach from=$jours item=jour key=jourCode}
-            <th class="listing" style="text-align: center">
+            <th class="center" style="font-weight: normal;">
                 {$jour}
                 {* LIEN POUR RESA DE LA JOURNEE COMPLETE *}
                 {*<a href="?jour={$jourCode}&avion_id={$avion_id}&resa_jour={$jourCode}&resa_heure=&resa_heure_fin=">
@@ -127,7 +135,7 @@ setInterval("clignotement()", 500);
     <tbody>
 {foreach from=$heures item=heure}
         <tr>
-            <th class="listing">{$heure}</th>
+            <th class="center" style="font-weight: normal;">{$heure}</th>
 {foreach from=$jours item=jour}
 {if $reservations[$jour][$heure]->interdit}
     {if $reservations[$jour][$heure]->libre}

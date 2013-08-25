@@ -19,13 +19,13 @@
     </ul>
     <fieldset id="general" class="cssform">
         <legend>{_T string="PARAMETRES.LEGENDE WEB"}</legend>
-        <table class="details">
+        <table class="listing">
             <caption class="ui-state-active ui-corner-top">{_T string="PARAMETRES.LISTE"}</caption>
             <thead>
                 <tr>
-                    <th class="listing">{_T string="PARAMETRES.CODE"}</th>
-                    <th class="listing">{_T string="PARAMETRES.FORMAT"}</th>
-                    <th class="listing">{_T string="PARAMETRES.VALEUR"}</th>
+                    <th>{_T string="PARAMETRES.CODE"}</th>
+                    <th>{_T string="PARAMETRES.FORMAT"}</th>
+                    <th>{_T string="PARAMETRES.VALEUR"}</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,13 +55,13 @@
     </fieldset>
     <fieldset id="parameters" class="cssform">
         <legend>{_T string="PARAMETRES.LEGENDE ACCESS"}</legend>
-        <table class="details">
+        <table class="listing">
             <caption class="ui-state-active ui-corner-top">{_T string="PARAMETRES.LISTE"}</caption>
             <thead>
                 <tr>
-                    <th class="listing">{_T string="PARAMETRES.CODE"}</th>
-                    <th class="listing">{_T string="PARAMETRES.FORMAT"}</th>
-                    <th class="listing">{_T string="PARAMETRES.VALEUR"}</th>
+                    <th>{_T string="PARAMETRES.CODE"}</th>
+                    <th>{_T string="PARAMETRES.FORMAT"}</th>
+                    <th>{_T string="PARAMETRES.VALEUR"}</th>
                 </tr>
             </thead>
             <tbody>

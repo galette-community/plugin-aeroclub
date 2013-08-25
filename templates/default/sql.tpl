@@ -9,13 +9,13 @@
     </div>
 {/if}
 <div class="bigtable">
-    <table class="details">
+    <table class="listing">
         <caption class="ui-state-active ui-corner-top">{_T string="SQL.EXISTENCE TABLES"}</caption>
         <tr>
-            <th class="listing">Table</th>
-            <th class="listing">Existe ?</th>
-            <th class="listing">Version</th>
-            <th class="listing">Cols</th>
+            <th>Table</th>
+            <th>Existe ?</th>
+            <th>Version</th>
+            <th>Cols</th>
         </tr>
 {foreach from=$liste_tables item=table key=clef}
         <tr>
@@ -29,17 +29,17 @@
 </div>
 <p></p>
 {if $montre_infos_table}
-<table id="listing" style="margin-left: auto; margin-right: auto; width: 65% !important">
+<table class="listing" style="margin-left: auto; margin-right: auto; width: 65% !important">
     <caption class="ui-state-active ui-corner-top">{_T string="SQL.DESCRIPTION TABLE"} {$nom_table}</caption>
     <thead>
         <tr>
-            <th class="listing">#</th>
-            <th class="listing">Colonne</th>
-            <th class="listing">Type</th>
-            <th class="listing">Nullable</th>
-            <th class="listing">PK</th>
-            <th class="listing">Incr.</th>
-            <th class="listing">Index</th>
+            <th>#</th>
+            <th>Colonne</th>
+            <th>Type</th>
+            <th>Nullable</th>
+            <th>PK</th>
+            <th>Incr.</th>
+            <th>Index</th>
         </tr>
     </thead>
     <tbody>
@@ -70,15 +70,15 @@ function jouerScript(nomScript) {ldelim}
 </script>
 <form action="sql.php" method="post" id="formSQL">
 <input type="hidden" id="nom_script" name="nom_script" value="">
-<table id="listing" style="margin-left: auto; margin-right: auto; width: 80% !important">
+<table class="listing" style="margin-left: auto; margin-right: auto; width: 80% !important">
     <caption class="ui-state-active ui-corner-top">{_T string="SQL.JOUER SCRIPT"}</caption>
     <thead>
         <tr>
-            <th class="listing">{_T string="SQL.NOM SCRIPT"}</th>
-            <th class="listing">{_T string="SQL.DATE MODIF"}</th>
-            <th class="listing">{_T string="SQL.NB EXEC"}</th>
-            <th class="listing">{_T string="SQL.DERNIERE EXEC"}</th>
-            <th class="listing">{_T string="SQL.ACTION"}</th>
+            <th>{_T string="SQL.NOM SCRIPT"}</th>
+            <th>{_T string="SQL.DATE MODIF"}</th>
+            <th>{_T string="SQL.NB EXEC"}</th>
+            <th>{_T string="SQL.DERNIERE EXEC"}</th>
+            <th>{_T string="SQL.ACTION"}</th>
         </tr>
     </thead>
     <tbody>

@@ -42,18 +42,18 @@
     <tr>
 {foreach from=$liste_avions item=avion key=avion_id}
         <td>
-            <table align="center">
+            <table align="center" class="listing">
                 <tr>
                     <td></td>
                     {foreach from=$jours item=j key=k}
-                    <th class="listing" width="25" style="text-align: center !important"
+                    <th width="25" class="center" style="font-weight: normal;"
                         title="{$tooltip_jours[$k]}" onMouseOver="tooltip.show(this)" onMouseOut="tooltip.hide(this)">{$j}</th>
                     {/foreach}
                 </tr>
             {foreach from=$heures item=h name=table_heures}
                 <tr>
                 {if $smarty.foreach.table_heures.index is even}
-                    <th class="listing" rowspan="2">{$h}</th>
+                    <th style="font-weight: normal;" rowspan="2">{$h}</th>
                 {/if}
                 {foreach from=$jours item=j key=jCode}
                     {if $planning[$avion_id]->reservations[$jCode][$h]->interdit}
