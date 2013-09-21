@@ -84,6 +84,7 @@ class PiloteAvion {
     private $_picture;                  // photo de l'avion
     private $_date_debut;               // date début dispo
     private $_date_fin;                 // date fin dispo
+    private $_tooltip;
 
     /**
      * Construit un nouvel avion vierge ou en charge un depuis la base de données

@@ -86,7 +86,7 @@ class PiloteAvionPicture extends Galette\Core\Picture {
      */
     public function displayThumb() {
         $nom_fichier = substr($this->file_path, 0, strlen($this->file_path) - 4);
-        
+
         // Ano 61 - Quand le fichier fait 0Ko on affiche l'image par défaut
         // Ou que l'image est trop petite (<40x40 pixels)
         $size = getimagesize($this->file_path);
@@ -222,6 +222,34 @@ class PiloteAvionPicture extends Galette\Core\Picture {
         }
 
         return parent::store($file);
+    }
+
+    /**
+     * Renvoi la taille en pixels d'une image
+     * @param int/string $avion_id Id de l'avion ou son immatriculation
+     * @return stdClass Un objet avec 2 propriétés width et height
+     */
+    public static function hauteurLargeurAvionPicture($avion_id) {
+        $result = new stdClass();
+
+        $immat = $avion_id;
+        if (is_numeric($avion_id)) {
+            $immat = trim(PiloteAvion::getImmatriculation(intval($args)));
+        }
+
+        if (is_file('avions_photos/' . $immat . '.jpg')) {
+            $size = getimagesize('avions_photos/' . $immat . '.jpg');
+            $result->width = $size[0];
+            $result->height = $size[1];
+        }
+
+        if (is_file('avions_photos/' . $immat . '.png')) {
+            $size = getimagesize('avions_photos/' . $immat . '.png');
+            $result->width = $size[0];
+            $result->height = $size[1];
+        }
+
+        return $result;
     }
 
 }
