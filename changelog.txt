@@ -1,3 +1,9 @@
+-- Version 0.8.4 / 21 sept 2013 --
+Nouveautés :
+- Nouveau tooltip plus mieux beaux aussi sur les miniatures des avions
+- Affichage des photos des avions plus rapide
+- Code HTML plus lisible sur les en-têtes de tableau triés
+
 -- Version 0.8.3 / 25 août 2013 --
 Nouveautés :
 - Compatibilité Galette 0.7.5
