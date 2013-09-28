@@ -69,7 +69,16 @@ $lang['IMPORT.DATE IMPORT COMPLEMENT'] = '- décoché, importe toutes les donné
 $lang['IMPORT.IGNORE SECTION'] = 'Importer même si la section n\'est pas ';
 $lang['IMPORT.CHOIX ANNEE IMPORT'] = 'Sélectionner l\'année importée :';
 $lang['IMPORT.DONNEES ANNEES SUPPRIMEES'] = 'toutes les données de cette année seront supprimées';
-$lang['IMPORT.ENVOYER'] = 'Envoyer';
+$lang['IMPORT.ENVOYER'] = 'Importer le fichier';
+$lang['IMPORT.NOM'] = 'Nom';
+$lang['IMPORT.TAILLE'] = 'Taille';
+$lang['IMPORT.NB ADH'] = 'Nb adhérents';
+$lang['IMPORT.NB OPE'] = 'Nb opérations';
+$lang['IMPORT.LIGNES TRAITEES'] = 'Lignes traitées';
+$lang['IMPORT.LIGNES TOTAL'] = 'Lignes total';
+$lang['IMPORT.IMPORTE LE'] = 'Importé le';
+$lang['IMPORT.EXPORTE LE'] = 'Exporté le';
+$lang['IMPORT.TYPE'] = 'Type';
 $lang['IMPORT.REUSSI'] = 'Import réussi';
 $lang['IMPORT.LIGNES LUES'] = 'ligne(s) lues dans l\'export';
 $lang['IMPORT.LIGNES IMPORTEES'] = 'ligne(s) mises à jour en base';
@@ -77,6 +86,9 @@ $lang['IMPORT.TABLE SQL CREEE'] = 'La table SQL n\'existait pas et a été cré�
 $lang['IMPORT.PAS ANNEE'] = ' --- Aucune --- ';
 $lang['IMPORT.SUPPRIMER'] = 'Supprimer les fichiers cochés';
 $lang['IMPORT.FICHIERS SUPPRIMES'] = 'fichier(s) supprimé(s)';
+$lang['IMPORT.CHECK'] = 'Tout cocher';
+$lang['IMPORT.UNCHECK'] = 'Tout décocher';
+$lang['IMPORT.INVERT'] = 'Inverser sélection';
 
 /**
  * HISTO_IMPORT.TPL 
@@ -317,6 +329,7 @@ $lang['MODIFIER INSTRUCTEUR.CODE'] = 'Code :';
 $lang['MODIFIER INSTRUCTEUR.NOM'] = 'Nom :';
 $lang['MODIFIER INSTRUCTEUR.ADHERENT'] = 'Adhérent associé :';
 $lang['MODIFIER INSTRUCTEUR.CODE ADHERENT'] = 'Code de l\'adhérent :';
+$lang['MODIFIER INSTRUCTEUR.EXTERNE'] = '--- Externe ---';
 $lang['MODIFIER INSTRUCTEUR.ENREGISTRER'] = 'Enregistrer l\'instructeur';
 $lang['MODIFIER INSTRUCTEUR.ANNULER'] = 'Annuler les modifications';
 
@@ -366,10 +379,13 @@ $lang['RESERVATION.RESA COMMENTS'] = 'Commentaires :';
 $lang['RESERVATION.RESA RESA'] = 'Réservation club :';
 $lang['RESERVATION.TITLE RESA CLUB LABEL'] = 'Réservation par l\'aéroclub de l\'aéronef';
 $lang['RESERVATION.TITLE ADHERENT'] = 'Choisissez l\'adhérent sur le compte duquel sera attaché la réservation.';
+$lang['RESERVATION.CHOIX ADHERENT'] = '--- Choisir adhérent ---';
 $lang['RESERVATION.TITLE INSTRUC'] = 'Si vous êtes élève, sélectionnez l\'instructeur qui vole avec vous.';
+$lang['RESERVATION.CHOIX INSTRUC'] = '--- Aucun / Pas d\'instructeur ---';
 $lang['RESERVATION.TITLE RESA JOUR'] = 'Choisissez le jour du vol';
 $lang['RESERVATION.TITLE HEURE DEBUT'] = 'Choisissez l\'heure de début de réservation';
 $lang['RESERVATION.TITLE DUREE'] = 'Sélectionnez l\'heure de fin de réservation de l\'aéronef. <br/>Le trésorier validera la durée réellement facturée.';
+$lang['RESERVATION.SOIT'] = 'soit';
 $lang['RESERVATION.TITLE NOM'] = 'Indiquez votre nom. <br/><b>Donnée obligatoire</b>.';
 $lang['RESERVATION.TITLE DESTI'] = 'Indiquez la destination du vol.';
 $lang['RESERVATION.TITLE EMAIL'] = 'Indiquez l\'adresse mail sur laquelle on peut vous joindre en cas de nécessité. <br/><b>Donnée obligatoire</b>.';
@@ -424,6 +440,8 @@ $lang['NEW OPERATION.PAS ENREGISTRE'] = 'L\'opération n\'a pas été enregistr�
 $lang['NEW OPERATION.TITRE'] = 'Informations générales sur l\'opération';
 $lang['NEW OPERATION.ADHERENT'] = 'Pilote :';
 $lang['NEW OPERATION.TYPE OPERATON'] = 'Type d\'opération :';
+$lang['NEW OPERATION.AUTRE'] = '--- Autre : préciser =>';
+$lang['NEW OPERATION.OU AUTRE'] = 'ou autre :';
 $lang['NEW OPERATION.LIBELLE OPERATION'] = 'Libellé de l\'opération :';
 $lang['NEW OPERATION.EXERCICE'] = 'Année comptable :';
 $lang['NEW OPERATION.DATE'] = 'Date opération :';
@@ -432,6 +450,8 @@ $lang['NEW OPERATION.VOL'] = 'Détails s\'il s\'agit d\'un vol';
 $lang['NEW OPERATION.AVION'] = 'Aéronef :';
 $lang['NEW OPERATION.TYPE VOL'] = 'Type de vol :';
 $lang['NEW OPERTATION.AEROPORT'] = 'Destination :';
+$lang['NEW OPERTATION.DEPART'] = 'Départ :';
+$lang['NEW OPERTATION.ARRIVEE'] = 'Arrivée :';
 $lang['NEW OPERATION.PASSAGERS'] = 'Nombre passagers :';
 $lang['NEW OPERATION.INSTRUCTEUR'] = 'Instructeur :';
 $lang['NEW OPERATION.ATTERISSAGE'] = 'Nombre d\'atterissages :';
@@ -458,6 +478,7 @@ $lang['RAPPROCHEMENT.ATTERRISSAGES'] = 'Nb atterissages :';
 $lang['RAPPROCHEMENT.PASSAGERS'] = 'Nb passagers :';
 $lang['RAPPROCHEMENT.DUREE'] = 'Durée :';
 $lang['RAPPROCHEMENT.AUTRE'] = '--- Ou autre ---';
+$lang['RAPPROCHEMENT.OU'] = 'Ou';
 $lang['RAPPROCHEMENT.OPERATION OK'] = 'opérations créées avec succès';
 $lang['RAPPROCHEMENT.ENREGISTRER'] = 'Valider le rapprochement';
 
@@ -524,6 +545,7 @@ $lang['SOLDES PILOTES.NEGATIF'] = 'négatifs';
 $lang['SOLDES PILOTES.ZERO'] = 'égaux à 0';
 $lang['SOLDES PILOTES.POSITIF'] = 'positifs';
 $lang['SOLDES PILOTES.TOUS'] = 'Tous';
+$lang['SOLDES PILOTES.ENVOYER MAILING'] = 'Envoyer un mailing';
 
 /**
  * VERSION.TPL 
