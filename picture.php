@@ -27,23 +27,38 @@
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
  */
-
-define('GALETTE_BASE_PATH', '../../');
-require_once GALETTE_BASE_PATH . 'includes/galette.inc.php';
-require_once '_config.inc.php';
-
-if (!$login->isLogged()) {
-    header('location: ' . GALETTE_BASE_PATH . 'index.php');
-    die();
-}
-
 $avion_id = $_GET['avion_id'];
-$thumb = $_GET['thumb'] == '1';
+$thumb = array_key_exists('thumb', $_GET) && $_GET['thumb'] == '1';
+$quick_mode = array_key_exists('quick', $_GET) && $_GET['quick'] == '1';
 
-$picture = new PiloteAvionPicture($avion_id);
-if ($thumb) {
-    $picture->displayThumb();
+if ($quick_mode && is_string($avion_id)) {
+    $photo_path = 'avions_photos';
+    $photo_name = $avion_id . ($thumb ? '_th' : '') . '.';
+
+    $dir = opendir($photo_path);
+    while (false !== ($entry = readdir($dir))) {
+        if (stripos($entry, $photo_name) === 0) {
+            $ext = pathinfo($entry, PATHINFO_EXTENSION);
+            header("Content-type: image/" . $ext);
+            readfile($photo_path . '/' . $entry);
+            break;
+        }
+    }
 } else {
-    $picture->display();
+    define('GALETTE_BASE_PATH', '../../');
+    require_once GALETTE_BASE_PATH . 'includes/galette.inc.php';
+    require_once '_config.inc.php';
+
+    if (!$login->isLogged()) {
+        header('location: ' . GALETTE_BASE_PATH . 'index.php');
+        die();
+    }
+
+    $picture = new PiloteAvionPicture($avion_id);
+    if ($thumb) {
+        $picture->displayThumb();
+    } else {
+        $picture->display();
+    }
 }
 ?>

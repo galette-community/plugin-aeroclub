@@ -319,6 +319,15 @@ foreach ($jours as $jourCode => $jourIHM) {
 //bug 32 - on affiche tous les avions
 //$liste_avions = PiloteAvion::getTousAvionsReservables(date('Y-m-d', strtotime($jour_selectionne)));
 $liste_avions = PiloteAvion::getTousAvionsReservables();
+foreach ($liste_avions as $avion) {
+    $avion->tooltip = '';
+    if ($avion->hasPicture()) {
+        $size = PiloteAvionPicture::hauteurLargeurAvionPicture($avion->immatriculation);
+        $avion->tooltip = '<img src=\'picture.php?quick=1&avion_id=' . $avion->immatriculation . '\' width=\'' . $size->width . '\' height=\'' . $size->height . '\'/>';
+    }
+    $avion->tooltip.= '<center><b>' . $avion->marque_type . '</b> (' . $avion->immatriculation . ')' .
+            '<br/>' . $avion->type_aeronef . '</center>';
+}
 
 $tpl->assign('page_title', _T("RESERVATION.PAGE TITLE"));
 //Set the path to the current plugin's templates,

@@ -102,6 +102,15 @@ for ($i = intval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALE
 // bug 32 - afficher tous les avions
 //$liste_avions = PiloteAvion::getTousAvionsReservables(date('Y-m-d', strtotime($jour_selectionne)));
 $liste_avions = PiloteAvion::getTousAvionsReservables();
+foreach ($liste_avions as $avion) {
+    $avion->tooltip = '';
+    if ($avion->hasPicture()) {
+        $size = PiloteAvionPicture::hauteurLargeurAvionPicture($avion->immatriculation);
+        $avion->tooltip = '<img src=\'picture.php?quick=1&avion_id=' . $avion->immatriculation . '\' width=\'' . $size->width . '\' height=\'' . $size->height . '\'/>';
+    }
+    $avion->tooltip.= '<center><b>' . $avion->marque_type . '</b> (' . $avion->immatriculation . ')' .
+            '<br/>' . $avion->type_aeronef . '</center>';
+}
 
 /**
  * Récupération de liste des résas pour les avions
@@ -132,8 +141,7 @@ foreach ($liste_avions as $avion) {
             // Sont interdits les samedi (jour 6) et dimanche (jour 0) à partir de 14h
             $planning[$avion->avion_id]->reservations[$jourCode][$h]->interdit = false;
             $planning[$avion->avion_id]->reservations[$jourCode][$h]->cliquable = date('Y-m-d', strtotime($jourCode)) . ' ' . $h > date('Y-m-d H:i');
-            if ((intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_SAMEDI) && date('w', strtotime($jourCode)) == 6)
-                    || (intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_DIMANCHE) && date('w', strtotime($jourCode)) == 0)) {
+            if ((intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_SAMEDI) && date('w', strtotime($jourCode)) == 6) || (intval($h) >= PiloteParametre::getValeurParametre(PiloteParametre::PARAM_CALENDRIER_HEURE_DIMANCHE) && date('w', strtotime($jourCode)) == 0)) {
                 $planning[$avion->avion_id]->reservations[$jourCode][$h]->interdit = true;
                 if (strtolower(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AUTORISER_RESA_INTERDIT)) != 'o') {
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->cliquable = false;
@@ -146,8 +154,7 @@ foreach ($liste_avions as $avion) {
             // Vérification de la dispo pour rendre un avion non dispo
             // sur 1 jour ou plus
             foreach ($liste_dispos[$avion->avion_id] as $dispo) {
-                if (strtotime(dateIHMtoSQL($dispo->date_debut)) <= strtotime($jourCode)
-                        && strtotime($jourCode) <= strtotime(dateIHMtoSQL($dispo->date_fin))) {
+                if (strtotime(dateIHMtoSQL($dispo->date_debut)) <= strtotime($jourCode) && strtotime($jourCode) <= strtotime(dateIHMtoSQL($dispo->date_fin))) {
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->interdit = true;
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->cliquable = false;
                 }
@@ -182,7 +189,7 @@ foreach ($liste_avions as $avion) {
                     // Définition infos résa
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->resa_id = $resa->reservation_id;
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->est_resa_club = $resa->est_reservation_club;
-                    
+
                     // Informations sur l'instructeur
                     if ($resa->id_instructeur != '') {
                         $planning[$avion->avion_id]->reservations[$jourCode][$h]->instructeur = $liste_instructeurs[$resa->id_instructeur]->nom . ' (' . $liste_instructeurs[$resa->id_instructeur]->code . ')';
@@ -203,8 +210,7 @@ foreach ($liste_avions as $avion) {
                 }
                 // Si la date de la case est entre la date de début et de fin de la résa
                 // on n'affiche pas la case (à cause du rowspan)
-                if (date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' > $resa->heure_debut
-                        && date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' < $resa->heure_fin) {
+                if (date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' > $resa->heure_debut && date('Y-m-d', strtotime($jourCode)) . ' ' . $h . ':00' < $resa->heure_fin) {
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->libre = false;
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->masquer = true;
                 }
