@@ -248,6 +248,9 @@ class PiloteOperation {
                     ->where('access_exercice = ?', $access_exercice)
                     ->order('1 desc')
                     ->limitPage(1, 1);
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             $result = $select->query()->fetch();
             if (intval($result->access_id) < 1000000) {
                 return 1000000;
@@ -282,6 +285,9 @@ class PiloteOperation {
             if ($annee > 0) {
                 $select->where('YEAR(date_operation) = ?', $annee);
             }
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             return $select->query()->rowCount();
         } catch (Exception $e) {
             Analog\Analog::log(
@@ -313,10 +319,13 @@ class PiloteOperation {
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->order($tri . ' ' . $direction)
+                    ->order('type_operation asc')
                     ->limitPage($no_page, $lignes_par_page);
             if ($annee > 0) {
                 $select->where('YEAR(date_operation) = ?', $annee);
             }
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
 
             $operations = array();
             $result = $select->query()->fetchAll();
@@ -355,6 +364,8 @@ class PiloteOperation {
             if ($annee > 0) {
                 $select->where('YEAR(date_operation) = ?', $annee);
             }
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             return $select->query()->rowCount();
         } catch (Exception $e) {
             Analog\Analog::log(
@@ -392,6 +403,8 @@ class PiloteOperation {
                 $select->where('YEAR(date_operation) = ?', $annee);
             }
 
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             $operations = array();
             $result = $select->query()->fetchAll();
             for ($i = 0; $i < count($result); $i++) {
@@ -425,6 +438,9 @@ class PiloteOperation {
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->where('duree_minute is not null');
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 $dt = new DateTime($select->query()->fetch()->dernier_vol);
                 return $dt->format('j M Y');
@@ -459,6 +475,9 @@ class PiloteOperation {
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->where('year(' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.date_operation) = ?', $annee);
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 //$name = 'sum(montant_operation)';
                 return $select->query()->fetch()->somme;
@@ -490,6 +509,9 @@ class PiloteOperation {
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->where('duree_minute is not null')
                     ->where('YEAR(date_operation) = ?', $annee);
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 return $select->query()->fetch()->duree;
             }
@@ -519,6 +541,9 @@ class PiloteOperation {
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->where('duree_minute is not null')
                     ->where('date_operation > date_sub(now(), interval 3 month)');
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 $nb_atterr = $select->query()->fetch()->sum;
                 if ($nb_atterr == null) {
@@ -551,6 +576,9 @@ class PiloteOperation {
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
                     ->where('date_operation > ?', date('Y-m-d', strtotime('-1 year')));
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 return $select->query()->fetch()->duree;
             }
@@ -585,7 +613,9 @@ class PiloteOperation {
                     ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
                     ->where('date_operation >= ?', date('Y-m-01', strtotime('+1 months -1 years')))
                     ->where('month(date_operation) = ?', $mois);
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 return $select->query()->fetch();
             }
@@ -627,6 +657,9 @@ class PiloteOperation {
             if (strlen($annee) == 4) {
                 $select->where('year(date_operation) = ?', $annee);
             }
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() > 0) {
                 $result = array();
                 $rows = $select->query()->fetchAll();
@@ -658,6 +691,9 @@ class PiloteOperation {
                     ->group('type_operation')
                     ->order('1');
             $result = array();
+
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             $rows = $select->query()->fetchAll();
             foreach ($rows as $r) {
                 $result[] = $r->type_operation;
@@ -923,7 +959,8 @@ class PiloteOperation {
                     ->group('immatriculation')
                     ->order('immatriculation');
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() > 0) {
                 $avions = array();
                 $rows = $select->query()->fetchAll();
@@ -960,7 +997,8 @@ class PiloteOperation {
                     ->where('month(date_operation) = ?', $mois)
                     ->where('year(date_operation) = ?', $annee);
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 return $select->query()->fetch()->somme;
             }
@@ -990,7 +1028,8 @@ class PiloteOperation {
                     ->where('month(date_operation) = ?', $mois)
                     ->where('year(date_operation) = ?', $annee);
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() == 1) {
                 return $select->query()->fetch()->somme;
             }
@@ -1021,6 +1060,8 @@ class PiloteOperation {
                     ->order($orderby);
             $result = $select->query()->fetchAll();
 
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             $liste_adherents = array();
             foreach ($result as $row) {
                 $liste_adherents[] = $row;
@@ -1050,7 +1091,8 @@ class PiloteOperation {
                     ->group('year(date_operation)')
                     ->order('1');
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() > 0) {
                 $result = array();
                 $rows = $select->query()->fetchAll();
@@ -1109,7 +1151,8 @@ class PiloteOperation {
                 $select->where('activite_adh = ?', $actif);
             }
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
+            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+
             if ($select->query()->rowCount() > 0) {
                 $result = array();
                 $rows = $select->query()->fetchAll();
