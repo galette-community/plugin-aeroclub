@@ -356,6 +356,7 @@ $lang['RESERVATION.ANNULER'] = 'Cancel';
 $lang['RESERVATION.SAUVER'] = 'Edit';
 $lang['RESERVATION.CLONER'] = 'Clone';
 $lang['RESERVATION.SUPPRIMER'] = 'Delete';
+$lang['RESERVATION.CONFIRM SUPPRESSION'] = 'Are you sure you want to delete this booking?';
 $lang['RESERVATION.DETAIL RESA'] = 'Booking details';
 $lang['RESERVATION.LEGENDE'] = 'Legend';
 $lang['RESERVATION.PAS RESA'] = 'No booking';
@@ -570,4 +571,5 @@ $lang['COMPLEMENT.MISE A JOUR'] = 'La fiche de complément existante a été mis
 $lang['OPERATION.AJOUT SUCCES'] = 'L\'opération du pilote a été ajoutée correctement';
 $lang['OPERATION.AJOUT ECHEC'] = 'Une erreur est survenue lors de l\'ajout de l\'opération du pilote';
 $lang['OPERATION.MISE A JOUR'] = 'L\'opération du pilote a été mise à jour';
-?>
+
+$lang['AJAX.CLOSE'] = 'Close';
