@@ -1,3 +1,32 @@
+#ajax_overlay {
+    background: none repeat scroll 0 0 #000000;
+    height: 100%;
+    left: 0;
+    opacity: 0.5;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+#ajax_pilote {
+    left: 50%;
+    position: absolute;
+    top: 100px;
+    width: 70%;
+    margin-left: -35%;
+    background: white;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+#button_close {
+    left: 97%;
+    margin-top: -32px;
+    position: relative;
+    top: -10px;
+    cursor: pointer;
+}
+
 #ajout_avion, #mot_de_passe, #calendrier, #script_sql, #import, #parametre, #sauver, 
 #annuler, #reserver, #supprimer, #ajout_instructeur, #pdf, #dispo, #zoom, #cloner,
 .button{
@@ -124,4 +153,9 @@
     border: 0;
     width: 100%;
     height: 600px;
+}
+
+.year_balance td {
+    background-color: #FFDFA1 !important;
+    font-weight: bold;
 }

@@ -53,7 +53,7 @@
 {/foreach}
         <tr>
             <td style="background: #CDF195" width="5%" align="center">
-                <img src="picts/plus.png" title="{_T string="DISPO.AJOUTER"}">
+                <img src="picts/plus.png" title="{_T string="DISPO.AJOUTER"}"/>
             </td>
             <td style="background: #CDF195" width="35%">
                 <input type="text" id="date_debut_nouveau" name="date_debut_nouveau">
@@ -76,39 +76,39 @@
 <script type="text/javascript">
 
 {foreach from=$liste_dispos item=dispo key=dispo_id}
-    $('#date_debut_{$dispo_id}').datepicker({ldelim}
+    $('#date_debut_{$dispo_id}').datepicker({
         changeMonth: true,
         changeYear: true,
         showOn: 'both',
         buttonImage: '{$template_subdir}images/calendar.png',
         buttonImageOnly: true,
         yearRange: 'c-5:c+5'
-    {rdelim});
-    $('#date_fin_{$dispo_id}').datepicker({ldelim}
+    });
+    $('#date_fin_{$dispo_id}').datepicker({
         changeMonth: true,
         changeYear: true,
         showOn: 'both',
         buttonImage: '{$template_subdir}images/calendar.png',
         buttonImageOnly: true,
         yearRange: 'c-5:c+5'
-    {rdelim});
+    });
 {/foreach}
 
-    $('#date_debut_nouveau').datepicker({ldelim}
+    $('#date_debut_nouveau').datepicker({
         changeMonth: true,
         changeYear: true,
         showOn: 'both',
         buttonImage: '{$template_subdir}images/calendar.png',
         buttonImageOnly: true,
         yearRange: 'c-5:c+5'
-    {rdelim});
-    $('#date_fin_nouveau').datepicker({ldelim}
+    });
+    $('#date_fin_nouveau').datepicker({
         changeMonth: true,
         changeYear: true,
         showOn: 'both',
         buttonImage: '{$template_subdir}images/calendar.png',
         buttonImageOnly: true,
         yearRange: 'c-5:c+5'
-    {rdelim});
+    });
 
 </script>

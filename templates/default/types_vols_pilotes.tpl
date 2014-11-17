@@ -31,25 +31,69 @@
     <table class="listing">
         <thead>
             <tr>
-                <th><a href="?annee={$sel_annee}&tri=nom_adh&direction={if $tri eq 'nom_adh' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="HEURES.ADHERENT NOM"}</a>{if $tri eq 'nom_adh' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'nom_adh' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th><a href="?annee={$sel_annee}&tri=prenom_adh&direction={if $tri eq 'prenom_adh' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="HEURES.ADHERENT PRENOM"}</a>{if $tri eq 'prenom_adh' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'prenom_adh' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                <th><a href="?annee={$sel_annee}&tri=login_adh&direction={if $tri eq 'login_adh' && $direction eq 'asc'}desc{else}asc{/if}">{_T string="HEURES.ADHERENT PSEUDO"}</a>{if $tri eq 'login_adh' && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq 'login_adh' && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
-                    {foreach from=$types_vols item=vol key=type}
-                    {if $selection->$type}
-                    <th><a href="?annee={$sel_annee}&tri={$type}&direction={if $tri eq $type && $direction eq 'asc'}desc{else}asc{/if}">{$vol}</a>{if $tri eq $type && $direction eq 'asc'} <img src="{$template_subdir}images/down.png">{elseif $tri eq $type && $direction eq 'desc'} <img src="{$template_subdir}images/up.png">{/if}</th>
+                <th>
+                    <a href="?annee={$sel_annee}&tri=nom_adh&direction={if $tri eq 'nom_adh' && $direction eq 'asc'}desc{else}asc{/if}">
+                        {_T string="HEURES.ADHERENT NOM"}
+                    </a>
+                    {if $tri eq 'nom_adh' && $direction eq 'asc'} 
+                        <img src="{$template_subdir}images/down.png"/>
+                    {elseif $tri eq 'nom_adh' && $direction eq 'desc'} 
+                        <img src="{$template_subdir}images/up.png"/>
                     {/if}
-                    {/foreach}
+                </th>
+                <th>
+                    <a href="?annee={$sel_annee}&tri=prenom_adh&direction={if $tri eq 'prenom_adh' && $direction eq 'asc'}desc{else}asc{/if}">
+                        {_T string="HEURES.ADHERENT PRENOM"}
+                    </a>
+                    {if $tri eq 'prenom_adh' && $direction eq 'asc'}
+                        <img src="{$template_subdir}images/down.png"/>
+                    {elseif $tri eq 'prenom_adh' && $direction eq 'desc'}
+                        <img src="{$template_subdir}images/up.png"/>
+                    {/if}
+                </th>
+                <th>
+                    <a href="?annee={$sel_annee}&tri=login_adh&direction={if $tri eq 'login_adh' && $direction eq 'asc'}desc{else}asc{/if}">
+                        {_T string="HEURES.ADHERENT PSEUDO"}
+                    </a>
+                    {if $tri eq 'login_adh' && $direction eq 'asc'}
+                        <img src="{$template_subdir}images/down.png"/>
+                    {elseif $tri eq 'login_adh' && $direction eq 'desc'}
+                        <img src="{$template_subdir}images/up.png"/>
+                    {/if}
+                </th>
+                {foreach from=$types_vols item=vol key=type}
+                    {if $selection->$type}
+                    <th>
+                        <a href="?annee={$sel_annee}&tri={$type}&direction={if $tri eq $type && $direction eq 'asc'}desc{else}asc{/if}">
+                            {$vol}
+                        </a>
+                        {if $tri eq $type && $direction eq 'asc'}
+                            <img src="{$template_subdir}images/down.png"/>
+                        {elseif $tri eq $type && $direction eq 'desc'}
+                            <img src="{$template_subdir}images/up.png"/>
+                        {/if}
+                    </th>
+                    {/if}
+                {/foreach}
             </tr>
         </thead>
         <tbody>
             {foreach from=$stats item=adh name=adherent}
                 <tr>
-                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">{$adh->nom_adh}</td>
-                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">{$adh->prenom_adh}</td>
-                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">{$adh->login_adh}</td>
+                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">
+                        {$adh->nom_adh}
+                    </td>
+                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">
+                        {$adh->prenom_adh}
+                    </td>
+                    <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}">
+                        {$adh->login_adh}
+                    </td>
                     {foreach from=$types_vols item=vol key=type}
                     {if $selection->$type}
-                        <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}" align="right">{$adh->$type}</td>
+                        <td class="tbl_line_{if $smarty.foreach.adherent.index is even}even{else}odd{/if}" align="right">
+                            {$adh->$type}
+                        </td>
                     {/if}
                     {/foreach}
                 </tr>

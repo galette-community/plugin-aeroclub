@@ -7,8 +7,8 @@
             <p>
                 <span class="bline">{_T string="FICHE PILOTE.ADHERENT"}</span>
                 <select name="login_adherent">
-                {foreach from=$liste_adherents item=adherent}
-                    <option value="{$adherent->pseudo_adh}"{if $adherent_selectionne eq $adherent->pseudo_adh} selected="selected"{/if}>{$adherent->nom_adh} {$adherent->prenom_adh} ({$adherent->pseudo_adh})</option>
+                {foreach from=$liste_adherents item=adh}
+                    <option value="{$adh->pseudo_adh}"{if $adherent_selectionne eq $adh->pseudo_adh} selected="selected"{/if}>{$adh->nom_adh} {$adh->prenom_adh} ({$adh->pseudo_adh})</option>
                 {/foreach}
                 </select>
             </p>
@@ -26,7 +26,7 @@
         <caption class="ui-state-active ui-corner-top">{_T string="FICHE PILOTE.FICHE"}</caption>
         <tr>
             <th>{_T string="FICHE PILOTE.CODE"}</th>
-            <td>{$adherent->login}</td>
+            <td>{$adherent->nickname}</td>
         </tr>
         <tr>
             <th>{_T string="FICHE PILOTE.NOM"}</th>

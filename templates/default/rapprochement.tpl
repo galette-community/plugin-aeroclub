@@ -21,17 +21,17 @@
                 <br/><label for="rapproche_{$resa_id}">{_T string="RAPPROCHEMENT.RAPPROCHER"}</label>
             </td>
             <td class="tbl_line_{if $smarty.foreach.rapproch.index is odd}odd{else}even{/if}" rowspan="6">
-                <img src="picts/calendar.png"> {$resa->heure_debut_IHM}
-                <br/><img src="picts/membre.png"> {$resa->nom}
-                <br/><img src="picts/mobile-phone.png"> {$resa->no_portable}
+                <img src="picts/calendar.png"/> {$resa->heure_debut_IHM}
+                <br/><img src="picts/membre.png"/> {$resa->nom}
+                <br/><img src="picts/mobile-phone.png"/> {$resa->no_portable}
 {if $resa->destination ne ''}
-                <br/><img src="picts/destination.png"> {$resa->destination}
+                <br/><img src="picts/destination.png"/> {$resa->destination}
 {/if}
 {if $resa->commentaires ne ''}
-                <br/><img src="picts/comment.png"> <i>{$resa->commentaires}</i>
+                <br/><img src="picts/comment.png"/> <i>{$resa->commentaires}</i>
 {/if}
 {if $resa->instructeur ne ''}
-                <br/><img src="picts/instructeur.png"> {$resa->instructeur}
+                <br/><img src="picts/instructeur.png"/> {$resa->instructeur}
 {/if}
             </td>
             <td class="tbl_line_{if $smarty.foreach.rapproch.index is odd}odd{else}even{/if}" align="right">
@@ -79,7 +79,7 @@
 {/foreach}
                     <option value="-null-">{_T string="RAPPROCHEMENT.AUTRE"}</option>
                 </select>
-                <br/>Ou <input type="text" name="type_vol_text_{$resa_id}" size="10">
+                <br/>{_T string="RAPPROCHEMENT.OU"} <input type="text" name="type_vol_text_{$resa_id}" size="10">
             </td>
             <td class="tbl_line_{if $smarty.foreach.rapproch.index is odd}odd{else}even{/if}" align="right">
                 {_T string="RAPPROCHEMENT.ATTERRISSAGES"}
@@ -147,7 +147,7 @@
 </div>
 </form>
 <script>
-function metAJourLibelle(resa_id){ldelim}
+function metAJourLibelle(resa_id){
     var heure = document.getElementById('heure_' + resa_id).value;
     var minute = document.getElementById('minute_' + resa_id).value;
     var i = document.getElementById('libelle_' + resa_id).value.indexOf('*');
@@ -165,9 +165,9 @@ function metAJourLibelle(resa_id){ldelim}
     document.getElementById('montant_' + resa_id).value = 
         '-' + (prix_minute * duree).toFixed(2);
 
-    if(!document.getElementById('rapproche_' + resa_id).checked) {ldelim}
+    if(!document.getElementById('rapproche_' + resa_id).checked) {
         document.getElementById('rapproche_' + resa_id).checked = true;
-    {rdelim}
-{rdelim}
+    }
+}
 
 </script>

@@ -1,5 +1,9 @@
 {if $parametres_sauves}
-    <div id="infobox">{_T string="PARAMETRES.PARAMETRES SAUVES"}</div>
+    <div id="infobox">
+        <h1>
+            {_T string="PARAMETRES.PARAMETRES SAUVES"}
+        </h1>
+    </div>
 {/if}
 {if $erreurs}
     <div id="errorbox">
@@ -30,13 +34,13 @@
             </thead>
             <tbody>
                 {foreach from=$liste_parametres_web item=parametre}
-                <tr>
-                    <td width="30%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                <tr class="{if $parametre@index is even}even{else}odd{/if}">
+                    <td width="30%">
                         <b>{$parametre->code}</b>
                         <br/>{$parametre->libelle}
                         <input type="hidden" name="liste_codes[]" value="{$parametre->code}">
                     </td>
-                    <td width="20%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                    <td width="20%">
                         <select name="format_{$parametre->code}">
                             <option value="null">{_T string="PARAMETRES.CHOIX"}</option>
                             <option value="date"{if $parametre->est_date} selected="selected"{/if}>{_T string="PARAMETRES.DATE"}</option>
@@ -44,7 +48,7 @@
                             <option value="numerique"{if $parametre->est_numerique} selected="selected"{/if}>{_T string="PARAMETRES.NUMERIQUE"}</option>
                         </select>
                     </td>
-                    <td width="50%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                    <td width="50%">
                         <input type="text" size="50" id="valeur_{$parametre->code}" name="valeur_{$parametre->code}" value="{if $parametre->est_date}{$parametre->valeur_date}{elseif $parametre->est_texte}{$parametre->valeur_texte}{else}{$parametre->valeur_numerique}{/if}"{if $parametre->estCouleur()} class="hex"{/if}>
                         <input type="hidden" name="ancienne_valeur_{$parametre->code}" value="{if $parametre->est_date}{$parametre->valeur_date}{elseif $parametre->est_texte}{$parametre->valeur_texte}{else}{$parametre->valeur_numerique}{/if}">
                     </td>
@@ -66,13 +70,13 @@
             </thead>
             <tbody>
                 {foreach from=$liste_parametres item=parametre}
-                <tr>
-                    <td width="30%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                <tr class="{if $parametre@index is even}even{else}odd{/if}">
+                    <td width="30%">
                         <b>{$parametre->code}</b>
                         <br/>{$parametre->libelle}
                         <input type="hidden" name="liste_codes[]" value="{$parametre->code}">
                     </td>
-                    <td width="20%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                    <td width="20%">
                         <select name="format_{$parametre->code}">
                             <option value="null">{_T string="PARAMETRES.CHOIX"}</option>
                             <option value="date"{if $parametre->est_date} selected="selected"{/if}>{_T string="PARAMETRES.DATE"}</option>
@@ -80,7 +84,7 @@
                             <option value="numerique"{if $parametre->est_numerique} selected="selected"{/if}>{_T string="PARAMETRES.NUMERIQUE"}</option>
                         </select>
                     </td>
-                    <td width="50%" class="tbl_line_{if $parametre->id_parametre % 2 eq 0}even{else}odd{/if}">
+                    <td width="50%">
                         <input type="text" size="50" id="valeur_{$parametre->code}" name="valeur_{$parametre->code}" value="{if $parametre->est_date}{$parametre->valeur_date}{elseif $parametre->est_texte}{$parametre->valeur_texte}{else}{$parametre->valeur_numerique}{/if}"{if $parametre->estCouleur()} class="hex"{/if}>
                         <input type="hidden" name="ancienne_valeur_{$parametre->code}" value="{if $parametre->est_date}{$parametre->valeur_date}{elseif $parametre->est_texte}{$parametre->valeur_texte}{else}{$parametre->valeur_numerique}{/if}">
                     </td>
@@ -99,7 +103,7 @@
 
 {foreach from=$liste_parametres item=parametre}
 {if $parametre->est_date}
-        $('#valeur_{$parametre->code}').datepicker({ldelim}
+        $('#valeur_{$parametre->code}').datepicker({
             changeMonth: true,
             changeYear: true,
             showOn: 'both',
@@ -107,12 +111,12 @@
             buttonImageOnly: true,
             maxDate: '-0d',
             yearRange: 'c-20'
-        {rdelim});
+        });
 {/if}
 {/foreach}
 {foreach from=$liste_parametres_web item=parametre}
 {if $parametre->est_date}
-        $('#valeur_{$parametre->code}').datepicker({ldelim}
+        $('#valeur_{$parametre->code}').datepicker({
             changeMonth: true,
             changeYear: true,
             showOn: 'both',
@@ -120,49 +124,49 @@
             buttonImageOnly: true,
             maxDate: '-0d',
             yearRange: 'c-20'
-        {rdelim});
+        });
 {/if}
 {/foreach}
 
     //for color pickers
-    $(function(){ldelim}
+    $(function(){
             // hex inputs
             $('input.hex')
                     .validHex()
-                    .keyup(function() {ldelim}
+                    .keyup(function() {
                             $(this).validHex();
-                    {rdelim})
-                    .click(function(){ldelim}
+                    })
+                    .click(function(){
                             $(this).addClass('focus');
                             $('#picker').remove();
                             $('div.picker-on').removeClass('picker-on');
                             $(this).after('<div id="picker"></div>').parent().addClass('picker-on');
                             $('#picker').farbtastic(this);
                             return false;
-                    {rdelim})
+                    })
                     .wrap('<div class="hasPicker"></div>')
                     .applyFarbtastic();
 
             //general app click cleanup
-            $('body').click(function() {ldelim}
+            $('body').click(function() {
                     $('div.picker-on').removeClass('picker-on');
                     $('#picker').remove();
                     $('input.focus, select.focus').removeClass('focus');
-            {rdelim});
+            });
 
-    {rdelim});
+    });
 
     //color pickers setup (sets bg color of inputs)
-    $.fn.applyFarbtastic = function() {ldelim}
-            return this.each(function() {ldelim}
+    $.fn.applyFarbtastic = function() {
+            return this.each(function() {
                     $('<div/>').farbtastic(this).remove();
-            {rdelim});
-    {rdelim};
+            });
+    };
 
     // validation for hex inputs
-    $.fn.validHex = function() {ldelim}
+    $.fn.validHex = function() {
 
-            return this.each(function() {ldelim}
+            return this.each(function() {
 
                     var value = $(this).val();
                     value = value.replace(/[^#a-fA-F0-9]/g, ''); // non [#a-f0-9]
@@ -172,7 +176,7 @@
 
                     $(this).val(value);
 
-            {rdelim});
+            });
 
-    {rdelim};
+    };
 </script>
