@@ -32,9 +32,8 @@ $this->register(
         'Aéroclub', //Name
         'Gestion d\'un aéroclub', //Short description
         'Melissa Djebel', //Author
-        '0.8.3 / 25 août 2013', //Version
-        '0.7.5', //Galette compatible version
+        '0.9.0', //Version
+        '0.8.0', //Galette compatible version
+        '2014-11-17', //Date
         null //Permissions needed - not yet implemented
 );
-
-?>

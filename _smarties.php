@@ -38,5 +38,3 @@ $_tpl_assignments = array(
     'pilote_dir'       => '__plugin_dir__',
     'is_instructeur'   => PiloteInstructeur::isPiloteInstructeur($login->login)
 );
-
-?>

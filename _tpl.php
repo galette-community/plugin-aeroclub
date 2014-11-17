@@ -12,4 +12,3 @@ global $login;
 $_tpl_array = array(
     'is_instructeur' => PiloteInstructeur::isPiloteInstructeur($login->login)
 );
-?>
