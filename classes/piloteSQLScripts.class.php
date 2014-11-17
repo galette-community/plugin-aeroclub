@@ -41,8 +41,9 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GPL License 3.0 or later
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
-*/
+ */
 class PiloteSQLScripts {
+
     const TABLE = 'sql_scripts';
 
     /**
@@ -139,15 +140,13 @@ class PiloteSQLScripts {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('count(*) as nb_execution', 'max(date_execution) as derniere_execution'))
-                    ->where('sql_script = ?', $nom_script);
-            return $select->query()->fetch();
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('nb_execution' => new Zend\Db\Sql\Predicate\Expression('count(*)'),
+                        'derniere_execution' => new Zend\Db\Sql\Predicate\Expression('max(date_execution)')))
+                    ->where(array('sql_script' => $nom_script));
+            return $zdb->execute($select);
         } catch (Exception $e) {
             Analog\Analog::log("Erreur SQL | " . $e->getMessage(), Analog\Analog::ERROR);
         }
     }
-
 }
-
-?>

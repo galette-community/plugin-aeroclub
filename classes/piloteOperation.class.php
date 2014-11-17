@@ -29,6 +29,10 @@
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
  */
+use Zend\Db\Sql\Predicate\Expression;
+use Zend\Db\Sql\Predicate\IsNotNull;
+use Zend\Db\Sql\Predicate\Operator;
+use Analog\Analog;
 
 /**
  * Class to store operations of the member : flights and bills
@@ -108,16 +112,16 @@ class PiloteOperation {
 
         if (is_int($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ?', $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array(self::PK => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Execption $e) {
-                Analog\Analog::log(
+                Analog::log(
                         'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                        $e->getTraceAsString(), Analog\Analog::ERROR
+                        $e->getTraceAsString(), Analog::ERROR
                 );
             }
         } else if (is_string($args)) {
@@ -125,17 +129,16 @@ class PiloteOperation {
             $this->_access_exercice = intval($exercice);
             $this->_access_id = intval($ope_id);
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where('access_exercice = ?', intval($exercice))
-                        ->where('access_id = ?', intval($ope_id));
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array('access_exercice' => intval($exercice), 'access_id' => intval($ope_id)));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Execption $e) {
-                Analog\Analog::log(
+                Analog::log(
                         'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                        $e->getTraceAsString(), Analog\Analog::ERROR
+                        $e->getTraceAsString(), Analog::ERROR
                 );
             }
         } else if (is_object($args)) {
@@ -194,38 +197,38 @@ class PiloteOperation {
             //an empty value will cause date to be set to 1901-01-01, a null
             //will result in 0000-00-00. We want a database NULL value here.
             if (!$this->_date_operation || $this->_date_operation == '') {
-                $values['date_operation'] = new Zend_Db_Expr('NULL');
+                $values['date_operation'] = new Expression('NULL');
             }
 
             $values['date_modification'] = date('Y-m-d H:i:s');
 
             if (!isset($this->_operation_id) || $this->_operation_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_operation_id = $zdb->db->lastInsertId();
-                    // logging
-                    // trop verbeux, commenté
-                    //$hist->add(_T("OPERATION.AJOUT SUCCES"), strtoupper($this->_login_adherent));
+                    $this->_operation_id = $zdb->driver->getLastGeneratedValue();
                 } else {
                     $hist->add(_T("OPERATION.AJOUT ECHEC"));
                     throw new Exception(_T("OPERATION.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_operation_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_operation_id));
+                $edit = $zdb->execute($update);
                 //edit == 0 does not mean there were an error, but that there
                 //were nothing to change
                 if ($edit > 0) {
-                    $hist->add(_T("OPERATION.MISE A JOUR"), strtoupper($this->_id_adherent));
+                    $hist->add(_T("OPERATION.MISE A JOUR"), strtoupper($this->_operation_id));
                 }
             }
             return true;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -243,24 +246,22 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'access_id')
-                    ->where('access_exercice = ?', $access_exercice)
-                    ->order('1 desc')
-                    ->limitPage(1, 1);
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('access_id'))
+                    ->where(array('access_exercice' => $access_exercice))
+                    ->order('access_id desc')
+                    ->limit(1);
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            $result = $select->query()->fetch();
-            if (intval($result->access_id) < 1000000) {
+            $result = $zdb->execute($select);
+            if (intval($result->current()->access_id) < 1000000) {
                 return 1000000;
             } else {
-                return intval($result->access_id) + 1;
+                return intval($result->current()->access_id) + 1;
             }
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -278,21 +279,21 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login);
+            $where = array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login);
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('nb' => new Expression('count(*)')))
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent');
             if ($annee > 0) {
-                $select->where('YEAR(date_operation) = ?', $annee);
+                $where[] = 'YEAR(date_operation) = ' . $annee;
             }
+            $select->where($where);
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            return $select->query()->rowCount();
+            $result = $zdb->execute($select);
+            return $result->current()->nb;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -314,31 +315,27 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
+            $where = array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login);
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->order($tri . ' ' . $direction)
-                    ->order('type_operation asc')
-                    ->limitPage($no_page, $lignes_par_page);
+                    ->order(array($tri . ' ' . $direction, 'type_operation asc'))
+                    ->limit($lignes_par_page)
+                    ->offset($no_page * $lignes_par_page);
             if ($annee > 0) {
-                $select->where('YEAR(date_operation) = ?', $annee);
+                $where[] = 'YEAR(date_operation) = ' . $annee;
             }
-
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+            $select->where($where);
 
             $operations = array();
-            $result = $select->query()->fetchAll();
-            for ($i = 0; $i < count($result); $i++) {
-                $piloteOperation = new PiloteOperation($result[$i]);
-                $piloteOperation->numero_ligne = $i;
-                $operations[] = $piloteOperation;
+            $result = $zdb->execute($select);
+            foreach ($result as $r) {
+                $operations[] = new PiloteOperation($r);
             }
             return $operations;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -356,21 +353,21 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('duree_minute is not null');
+            $where = array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, new IsNotNull('duree_minute'));
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('nb' => new Expression('count(*)')))
+                    ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent');
             if ($annee > 0) {
-                $select->where('YEAR(date_operation) = ?', $annee);
+                $where[] = 'YEAR(date_operation) = ' . $annee;
             }
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+            $select->where($where);
 
-            return $select->query()->rowCount();
+            $result = $zdb->execute($select);
+            return $result->current()->nb;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -392,31 +389,27 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
+            $where = array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, new IsNotNull('duree_minute'));
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('duree_minute is not null')
                     ->order($tri . ' ' . $direction)
-                    ->limitPage($no_page, $lignes_par_page);
+                    ->limit($lignes_par_page)
+                    ->offset($no_page * $lignes_par_page);
             if ($annee > 0) {
-                $select->where('YEAR(date_operation) = ?', $annee);
+                $where[] = 'YEAR(date_operation) = ' . $annee;
             }
-
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+            $select->where($where);
 
             $operations = array();
-            $result = $select->query()->fetchAll();
-            for ($i = 0; $i < count($result); $i++) {
-                $piloteOperation = new PiloteOperation($result[$i]);
-                $piloteOperation->numero_ligne = $i;
-                $operations[] = $piloteOperation;
+            $result = $zdb->execute($select);
+            foreach ($result as $r) {
+                $operations[] = new PiloteOperation($r);
             }
             return $operations;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -433,23 +426,21 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'max(date_operation) as dernier_vol')
+            $select = $zdb->select(PILOTE_PREFIX . PiloteOperation::TABLE)
+                    ->columns(array('dernier_vol' => new Expression('MAX(date_operation)')))
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('duree_minute is not null');
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, new IsNotNull('duree_minute')));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                $dt = new DateTime($select->query()->fetch()->dernier_vol);
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                $dt = new DateTime($result->current()->dernier_vol);
                 return $dt->format('j M Y');
             }
             return '';
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -470,22 +461,19 @@ class PiloteOperation {
             $annee = date('Y');
         }
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(montant_operation) as somme')
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('somme' => new Expression('SUM(montant_operation)')))
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('year(' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.date_operation) = ?', $annee);
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, 'YEAR(' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.date_operation) = ' . $annee));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                //$name = 'sum(montant_operation)';
-                return $select->query()->fetch()->somme;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->somme;
             }
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -503,22 +491,20 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
+            $select = $zdb->select(PILOTE_PREFIX . PiloteOperation::TABLE)
+                    ->columns(array('duree' => new Expression('SUM(duree_minute)')))
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('duree_minute is not null')
-                    ->where('YEAR(date_operation) = ?', $annee);
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, new IsNotNull('duree_minute'), 'YEAR(date_operation) = ' . $annee));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                return $select->query()->fetch()->duree;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->duree;
             }
+            return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
         }
         return false;
@@ -535,26 +521,25 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(nb_atterrissages) as sum')
+            $where = array();
+            $where[PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh'] = $login;
+            $where[] = new IsNotNull('duree_minute');
+            $where[] = new Operator('date_operation', Operator::OP_GT, new Expression('date_sub(now(), interval 3 month)'));
+            $select = $zdb->select(PILOTE_PREFIX . PiloteOperation::TABLE)
+                    ->columns(array('sum' => new Expression('SUM(nb_atterrissages)')))
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('duree_minute is not null')
-                    ->where('date_operation > date_sub(now(), interval 3 month)');
+                    ->where($where);
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                $nb_atterr = $select->query()->fetch()->sum;
-                if ($nb_atterr == null) {
-                    $nb_atterr = 0;
-                }
-                return $nb_atterr;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                $nb_atterr = $result->current()->sum;
+                return $nb_atterr == null ? 0 : $nb_atterr;
             }
+            return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
         }
         return false;
@@ -571,21 +556,20 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, 'sum(duree_minute) as duree')
+            $select = $zdb->select(PILOTE_PREFIX . PiloteOperation::TABLE)
+                    ->columns(array('duree' => new Expression('SUM(duree_minute)')))
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $pseudo)
-                    ->where('date_operation > ?', date('Y-m-d', strtotime('-1 year')));
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, new Expression('date_operation > \'' . date('Y-m-d', strtotime('-1 year')) . '\'')));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                return $select->query()->fetch()->duree;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->duree;
             }
+            return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
         }
         return false;
@@ -603,37 +587,34 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
             $cols = array();
-            $cols[] = 'sum(montant_operation) as montant';
-            $cols[] = 'sum(duree_minute) as duree';
-            $cols[] = 'max(date_operation) as max';
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $cols)
+            $cols['montant'] = new Expression('SUM(montant_operation)');
+            $cols['duree'] = new Expression('SUM(duree_minute)');
+            $cols['max'] = new Expression('MAX(date_operation)');
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns($cols)
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $login)
-                    ->where('date_operation >= ?', date('Y-m-01', strtotime('+1 months -1 years')))
-                    ->where('month(date_operation) = ?', $mois);
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $login, 'date_operation >= \'' . date('Y-m-01', strtotime('+1 months -1 years')) . '\'', 'MONTH(date_operation) = ' . $mois));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                return $select->query()->fetch();
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current();
             }
             return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
         /*
-          select sum(montant_operation) as 'somme',
+          select SUM(montant_operation) as 'somme',
           from vav_pilote_operations
           join vav_adherents on vav_adherents.id_adh = vav_pilote_operations.id_adherent
           where date_operation > date_sub(now(), interval 1 year)
           and vav_adherents.login_adh = '121TA'
-          and month(date_operation) = 1
+          and MONTH(date_operation) = 1
          */
     }
 
@@ -649,29 +630,26 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('type_vol'))
-                    ->where('duree_minute is not null')
+            $where = array(new IsNotNull('duree_minute'));
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('type_vol'))
                     ->group('type_vol')
-                    ->order('1');
+                    ->order('type_vol');
             if (strlen($annee) == 4) {
-                $select->where('year(date_operation) = ?', $annee);
+                $where[] = 'YEAR(date_operation) = ' . $annee;
             }
+            $select->where($where);
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() > 0) {
-                $result = array();
-                $rows = $select->query()->fetchAll();
-                foreach ($rows as $r) {
-                    $result[] = $r->type_vol;
-                }
-                return $result;
+            $result = $zdb->execute($select);
+            $type_vols = array();
+            foreach ($result as $r) {
+                $type_vols[] = $r->type_vol;
             }
+            return $type_vols;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -686,23 +664,21 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteOperation::TABLE, array('type_operation'))
+            $select = $zdb->select(PILOTE_PREFIX . PiloteOperation::TABLE)
+                    ->columns(array('type_operation'))
                     ->group('type_operation')
-                    ->order('1');
-            $result = array();
+                    ->order('type_operation');
+            $type_ops = array();
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            $rows = $select->query()->fetchAll();
+            $rows = $zdb->execute($select);
             foreach ($rows as $r) {
-                $result[] = $r->type_operation;
+                $type_ops[] = $r->type_operation;
             }
-            return $result;
+            return $type_ops;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -715,26 +691,26 @@ class PiloteOperation {
      * @param string $typevol Type de vol filtré ('all' pour n'importe quel type)
      * @param string $tri Ordre de tri des résultats
      * @param string $direction Sens de tri ASC / DESC
-     * @return array Tableau de membres avec les propriétées supplémentaires somme2011 (année N-1), somme2012 (année en cours), sommeglissant (sur 12 derniers mois)
+     * @return array Tableau de membres avec les propriétées supplémentaires somme_last_year (année N-1), somme_this_year (année en cours), somme_glissant (sur 12 derniers mois)
      */
     public static function getStatistiquesPilotes($typevol = 'all', $tri = 'nom_adh', $direction = 'asc') {
         global $zdb;
 
         /*
          * SELECT id_adh AS idcalcul, nom_adh, prenom_adh, login_adh, (
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE id_adherent = idcalcul
-          AND year( date_operation ) =2011
+          AND YEAR( date_operation ) =2011
           ) AS somme2011, (
 
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE id_adherent = idcalcul
-          AND year( date_operation ) =2012
+          AND YEAR( date_operation ) =2012
           ) AS somme2012, (
 
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE id_adherent = idcalcul
           AND date_operation > '2011-06-01'
@@ -744,48 +720,57 @@ class PiloteOperation {
          */
 
         try {
-            $select2011 = new Zend_Db_Select($zdb->db);
-            $select2011->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                    ->where('id_adherent = idcalcul')
-                    ->where('year(date_operation) = ?', date('Y', strtotime('-1 years')));
+            $where_last_year = array();
+            $where_last_year[] = 'id_adherent = idcalcul';
+            $where_last_year[new Expression('YEAR(date_operation)')] = date('Y', strtotime('-1 years'));
+
+            $where_this_year = array();
+            $where_this_year[] = 'id_adherent = idcalcul';
+            $where_this_year[new Expression('YEAR(date_operation)')] = date('Y');
+
+            $where_glissant = array();
+            $where_glissant[] = 'id_adherent = idcalcul';
+            $where_glissant[] = 'YEAR(date_operation) > ' . date('Y-m-d', strtotime('-1 years'));
+
             if ($typevol != 'all') {
-                $select2011->where('type_vol = ?', $typevol);
+                $where_last_year ['type_vol'] = $typevol;
+                $where_this_year['type_vol'] = $typevol;
+                $where_glissant['type_vol'] = $typevol;
             }
 
-            $select2012 = new Zend_Db_Select($zdb->db);
-            $select2012->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                    ->where('id_adherent = idcalcul')
-                    ->where('year(date_operation) = ?', date('Y'));
-            if ($typevol != 'all') {
-                $select2012->where('type_vol = ?', $typevol);
-            }
+            $select_last_year = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
+                    ->where($where_last_year);
 
-            $selectglissant = new Zend_Db_Select($zdb->db);
-            $selectglissant->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                    ->where('id_adherent = idcalcul')
-                    ->where('date_operation > ?', date('Y-m-d', strtotime('-1 years')));
-            if ($typevol != 'all') {
-                $selectglissant->where('type_vol = ?', $typevol);
-            }
+            $select_this_year = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
+                    ->where($where_this_year);
 
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE, array('*',
-                        'idcalcul' => 'id_adh',
-                        'somme2011' => new Zend_Db_Expr('(' . $select2011 . ')'),
-                        'somme2012' => new Zend_Db_Expr('(' . $select2012 . ')'),
-                        'sommeglissant' => new Zend_Db_Expr('(' . $selectglissant . ')')))
-                    ->where('activite_adh = 1')
+            $select_12_months = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
+                    ->where($where_glissant);
+
+            $columns = array();
+            $columns[] = '*';
+            $columns['idcalcul'] = 'id_adh';
+            $columns['somme_last_year'] = new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_last_year) . ')');
+            $columns['somme_this_year'] = new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_this_year) . ')');
+            $columns['somme_glissant'] = new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_12_months) . ')');
+            $select = $zdb->select(Galette\Entity\Adherent::TABLE)
+                    ->columns($columns)
+                    ->where(array('activite_adh' => '1'))
                     ->order($tri . ' ' . $direction);
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
-            if ($select->query()->rowCount() > 0) {
-                return $select->query()->fetchAll();
+            $adherent_sommes = array();
+            $results = $zdb->execute($select);
+            foreach ($results as $r) {
+                $adherent_sommes[] = $r;
             }
-            return false;
+            return $adherent_sommes;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -809,57 +794,52 @@ class PiloteOperation {
                 $annee = date('Y');
             }
 
-            // $types_vol nous permet de récupérer les colonnes qui l'on cherche
+// $types_vol nous permet de récupérer les colonnes qui l'on cherche
             $types_vol = array();
             $types_vol[] = '*';
             $types_vol['idcalcul'] = 'id_adh';
-            // On récupère d'abord les types de vols sur l'année
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('type_vol'))
-                    ->where('year(date_operation) = ?', $annee)
-                    ->where('duree_minute is not null')
+// On récupère d'abord les types de vols sur l'année
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('type_vol'))->where(array('YEAR(date_operation) = ' . $annee, new IsNotNull('duree_minute')))
                     ->group('type_vol')
-                    ->order('1');
-            // On créé autant de requête SQL que de types vols existant
-            $rows = $select->query()->fetchAll();
-            for ($i = 0; $i < count($rows); $i++) {
-                if (!is_null($rows[$i]->type_vol)) {
-                    $selectTV = new Zend_Db_Select($zdb->db);
-                    $selectTV->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                            ->where('id_adherent = idcalcul')
-                            ->where('year(date_operation) = ?', $annee)
-                            ->where('type_vol = ?', $rows[$i]->type_vol);
-                    $types_vol['TV' . $i] = new Zend_Db_Expr('(' . $selectTV . ')');
+                    ->order('type_vol');
+// On créé autant de requête SQL que de types vols existant
+            $rows = $zdb->execute($select);
+            $i = 0;
+            foreach ($rows as $r) {
+                if (!is_null($r->type_vol)) {
+                    $selectTV = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                            ->columns(array('duree' => new Expression('SUM(duree_minute)')))
+                            ->where(array('id_adherent = idcalcul', 'YEAR(date_operation) = ' . $annee, 'type_vol' => $r->type_vol));
+                    $query = $zdb->sql->getSqlStringForSqlObject($selectTV);
+                    $types_vol['TV' . $i] = new Expression('(' . $query . ')');
                 }
+                $i ++;
             }
-            // On ajoute une requête pour la somme sur l'année
-            $selectTV = new Zend_Db_Select($zdb->db);
-            $selectTV->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                    ->where('id_adherent = idcalcul')
-                    ->where('year(date_operation) = ?', $annee);
-            $types_vol['TVtotal'] = new Zend_Db_Expr('(' . $selectTV . ')');
+// On ajoute une requête pour la somme sur l'année
+            $selectTV = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('duree' => new Expression('SUM(duree_minute)')))
+                    ->where(array('id_adherent = idcalcul', 'YEAR(date_operation) = ' . $annee));
+            $query = $zdb->sql->getSqlStringForSqlObject($selectTV);
+            $types_vol['TVtotal'] = new Expression('(' . $query . ')');
 
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE, $types_vol)
-                    ->where('activite_adh = 1')
+            $select = $zdb->select(Galette\Entity\Adherent::TABLE)
+                    ->columns($types_vol)
+                    ->where(array('activite_adh' => 1))
                     ->order($tri . ' ' . $direction);
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
-            if ($select->query()->rowCount() > 0) {
-                $results = array();
-                $rows = $select->query()->fetchAll();
-                foreach ($rows as $r) {
-                    if (is_numeric($r->TVtotal)) {
-                        $results[] = $r;
-                    }
+            $rows = $zdb->execute($select);
+            $results = array();
+            foreach ($rows as $r) {
+                if (is_numeric($r->TVtotal)) {
+                    $results[] = $r;
                 }
-                return $results;
             }
-            return false;
+            return $results;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -873,25 +853,26 @@ class PiloteOperation {
      * @param string $direction Sens de tri ASC/DESC
      * @return array Tableau des avions avec les propriétées supplémentaires somme2011 (année N-1), somme2012 (année en cours), sommeglissant (sur 12 derniers mois)
      */
-    public static function getStatistiquesAvions($tri = 'immatriculation', $direction = 'asc') {
+    public static function getStatistiquesAvions
+    ($tri = 'immatriculation', $direction = 'asc') {
         global $zdb;
 
         /*
          * SELECT `immatriculation` AS immat, (
 
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE immatriculation = immat
-          AND year( date_operation ) =2011
+          AND YEAR( date_operation ) =2011
           ) AS somme2011, (
 
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE immatriculation = immat
-          AND year( date_operation ) =2012
+          AND YEAR( date_operation ) =2012
           ) AS somme2012, (
 
-          SELECT sum( duree_minute )
+          SELECT SUM( duree_minute )
           FROM vav_pilote_operations
           WHERE immatriculation = immat
           AND date_operation > '2011-06-01'
@@ -901,42 +882,40 @@ class PiloteOperation {
          */
 
         try {
-            $select2011 = new Zend_Db_Select($zdb->db);
-            $select2011->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
-                    ->where('immatriculation = immat')
-                    ->where('year(date_operation) = ?', date('Y', strtotime('-1 years')));
+            $select_last_year = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
+                    ->where(array('immatriculation = immat', new Expression('YEAR(date_operation)') => date('Y', strtotime('-1 years'))));
 
-            $select2012 = new Zend_Db_Select($zdb->db);
-            $select2012->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
+            $select_this_year = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
                     ->where('immatriculation = immat')
-                    ->where('year(date_operation) = ?', date('Y'));
+                    ->where(array('immatriculation = immat', new Expression('YEAR(date_operation)') => date('Y')));
 
-            $selectglissant = new Zend_Db_Select($zdb->db);
-            $selectglissant->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, 'sum(duree_minute)')
+            $select_12_months = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(new Expression('SUM(duree_minute)')))
                     ->where('immatriculation = immat')
-                    ->where('date_operation > ?', date('Y-m-d', strtotime('-1 years')));
+                    ->where(array('immatriculation = immat', 'YEAR(date_operation) > ' . date('Y-m-d', strtotime('-1 years'))));
 
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array(
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array(
                         'immat' => 'immatriculation',
-                        'somme2011' => new Zend_Db_Expr('(' . $select2011 . ')'),
-                        'somme2012' => new Zend_Db_Expr('(' . $select2012 . ')'),
-                        'sommeglissant' => new Zend_Db_Expr('(' . $selectglissant . ')')
+                        'somme_last_year' => new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_last_year) . ')'),
+                        'somme_this_year' => new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_this_year) . ')'),
+                        'somme_glissant' => new Expression('(' . $zdb->sql->getSqlStringForSqlObject($select_12_months) . ')')
                     ))
-                    ->where('immatriculation is not null')
-                    ->where('duree_minute is not null')
+                    ->where(array(new IsNotNull('immatriculation'), new IsNotNull('duree_minute')))
                     ->group('immatriculation')
                     ->order($tri . ' ' . $direction);
 
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
-            if ($select->query()->rowCount() > 0) {
-                return $select->query()->fetchAll();
+            $results = $zdb->execute($select);
+            if ($results->count() > 0) {
+                return $results;
             }
             return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -952,28 +931,23 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('immatriculation'))
-                    ->where('duree_minute is not null')
-                    ->where('immatriculation is not null')
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('immatriculation'))
+                    ->where(array
+                        (new IsNotNull('duree_minute'), new IsNotNull('immatriculation')))
                     ->group('immatriculation')
                     ->order('immatriculation');
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() > 0) {
-                $avions = array();
-                $rows = $select->query()->fetchAll();
-                foreach ($rows as $r) {
-                    $avions[] = $r->immatriculation;
-                }
-                return $avions;
+            $avions = array();
+            $rows = $zdb->execute($select);
+            foreach ($rows as $r) {
+                $avions[] = $r->immatriculation;
             }
-            return false;
+            return $avions;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -987,26 +961,24 @@ class PiloteOperation {
      * @param int $annee Année (ex: 2011, 2012, etc.)
      * @return decimal Durée de vol en minutes
      */
-    public static function getDureeVolPourAvion($immatriculation, $mois, $annee) {
+    public static function getDureeVolPourAvion(
+    $immatriculation, $mois, $annee) {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('somme' => 'sum(duree_minute)'))
-                    ->where('immatriculation = ?', $immatriculation)
-                    ->where('month(date_operation) = ?', $mois)
-                    ->where('year(date_operation) = ?', $annee);
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('somme' => new Expression('SUM(duree_minute)')))
+                    ->where(array('immatriculation' => $immatriculation, 'MONTH(date_operation) = ' . $mois, 'YEAR(date_operation) = ' . $annee));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                return $select->query()->fetch()->somme;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->somme;
             }
             return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1023,21 +995,20 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('somme' => 'sum(duree_minute)'))
-                    ->where('month(date_operation) = ?', $mois)
-                    ->where('year(date_operation) = ?', $annee);
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('somme' => new Expression
+                                ('SUM(duree_minute)')))
+                    ->where(array('MONTH(date_operation) = ' . $mois, 'YEAR(date_operation) = ' . $annee));
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() == 1) {
-                return $select->query()->fetch()->somme;
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->somme;
             }
             return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1054,13 +1025,10 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-                    ->where('activite_adh = 1')
-                    ->order($orderby);
-            $result = $select->query()->fetchAll();
-
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
+            $select = $zdb->select(Galette\Entity\Adherent::TABLE)
+                    ->where(array('activite_adh' => 1))->
+                    order($orderby);
+            $result = $zdb->execute($select);
 
             $liste_adherents = array();
             foreach ($result as $row) {
@@ -1068,9 +1036,9 @@ class PiloteOperation {
             }
             return $liste_adherents;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1085,35 +1053,30 @@ class PiloteOperation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('annee' => 'year(date_operation)'))
-                    ->where('montant_operation is not null')
-                    ->group('year(date_operation)')
-                    ->order('1');
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('annee' => new Expression('YEAR(date_operation)')))
+                    ->where(new IsNotNull('montant_operation'))
+                    ->group('annee')
+                    ->order('annee');
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() > 0) {
-                $result = array();
-                $rows = $select->query()->fetchAll();
-                foreach ($rows as $r) {
-                    $result[] = $r->annee;
-                }
-                return $result;
+            $result = array();
+            $rows = $zdb->execute($select);
+            foreach ($rows as $r) {
+                $result[] = $r->annee;
             }
+            return $result;
 
             /**
-             * SELECT year( date_operation ) AS annee
+             * SELECT YEAR( date_operation ) AS annee
              * FROM vav_pilote_operations
              * WHERE montant_operation IS NOT NULL
-             * GROUP BY year( date_operation )
+             * GROUP BY YEAR( date_operation )
              * ORDER BY 1 
              */
-            return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1128,64 +1091,60 @@ class PiloteOperation {
      * @param string $direction Sens de tri (asc/desc)
      * @return array 
      */
-    public static function getSoldesPilotes($actif, $solde, $tri, $direction) {
+    public static function getSoldesPilotes(
+    $actif, $solde, $tri, $direction) {
         global $zdb;
 
         try {
-            $selectsolde = new Zend_Db_Select($zdb->db);
-            $selectsolde->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('sum(montant_operation)'))
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where('year(date_operation) = ?', date('Y'));
+            $selectsolde = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('somme' => new Expression('SUM(montant_operation)')))
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent', 'YEAR(date_operation) = ' . date('Y')));
+            $query = $zdb->sql->getSqlStringForSqlObject($selectsolde);
 
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE, array(
+            $select = $zdb->select(Galette\Entity\Adherent::TABLE)
+                    ->columns(array(
                         'nom_adh',
                         'prenom_adh',
                         'login_adh',
                         'email_adh',
-                        'solde' => new Zend_Db_Expr('(' . $selectsolde . ')'),
+                        'solde' => new Expression('(' . $query . ')'),
                         'id_adh',
                     ))
                     ->order($tri . ' ' . $direction);
             if (!is_null($actif)) {
-                $select->where('activite_adh = ?', $actif);
+                $select->where(array('activite_adh' => $actif));
             }
 
-            Analog\Analog::log($select->assemble(), Analog\Analog::DEBUG);
-
-            if ($select->query()->rowCount() > 0) {
-                $result = array();
-                $rows = $select->query()->fetchAll();
-                foreach ($rows as $r) {
-                    if ($solde == 'negatif' && is_numeric($r->solde) && $r->solde < 0) {
-                        $result[] = $r;
-                    } else if ($solde == 'zero' && is_numeric($r->solde) && $r->solde == 0) {
-                        $result[] = $r;
-                    } else if ($solde == 'positif' && is_numeric($r->solde) && $r->solde > 0) {
-                        $result[] = $r;
-                    } else if ($solde == 'all') {
-                        $result[] = $r;
-                    }
+            $result = array();
+            $rows = $zdb->execute($select);
+            foreach ($rows as $r) {
+                if ($solde == 'negatif' && is_numeric($r->solde) && $r->solde < 0) {
+                    $result[] = $r;
+                } else if ($solde == 'zero' && is_numeric($r->solde) && $r->solde == 0) {
+                    $result [] = $r;
+                } else if ($solde == 'positif' && is_numeric($r->solde) && $r->solde > 0) {
+                    $result [] = $r;
+                } else if ($solde == 'all') {
+                    $result[] = $r;
                 }
-
-                return $result;
             }
+
+            return $result;
 
             /**
              * SELECT * , 
-             *  (select sum(montant_operation) 
+             *  (select SUM(montant_operation) 
              *   from `vav_pilote_operations` 
              *   where `vav_pilote_operations`.id_adherent = vav_adherents.id_adh
-             *   and year(date_operation)=2012) as solde
+             *   and YEAR(date_operation)=2012) as solde
              *   FROM `vav_adherents` 
              *   WHERE `activite_adh` = 1
              *  
              */
-            return false;
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1198,24 +1157,19 @@ class PiloteOperation {
      * @param int $annee Année sur laquelle supprimer les opérations
      * @return int Nombre d'opérations supprimées
      */
-    public static function deleteObsoleteOperation($operations_id, $annee) {
+    public static function
+
+    deleteObsoleteOperation($operations_id, $annee) {
         global $zdb;
 
         try {
-            //$zdb->db->getProfiler()->setEnabled(true);
-
-            $where = array();
-            $where[] = $zdb->db->quoteInto('access_exercice = ?', $annee);
-            $where[] = 'access_id NOT IN (' . join(',', $operations_id) . ')';
-            $n = $zdb->db->delete(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $where);
-            //Analog\Analog::log($zdb->db->getProfiler()->getLastQueryProfile()->getQuery(), Analog\Analog::INFO);
-            //$zdb->db->getProfiler()->setEnabled(false);
-
-            return $n;
+            $delete = $zdb->delete(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('access_exercice' => $annee, 'access_id NOT IN (' . join(',', $operations_id) . ')'));
+            return $zdb->execute($delete);
         } catch (Exception $e) {
-            Analog\Analog::log(
+            Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
-                    $e->getTraceAsString(), Analog\Analog::ERROR
+                    $e->getTraceAsString(), Analog::ERROR
             );
             return false;
         }
@@ -1281,5 +1235,3 @@ class PiloteOperation {
     }
 
 }
-
-?>

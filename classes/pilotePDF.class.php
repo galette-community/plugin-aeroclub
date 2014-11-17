@@ -127,5 +127,3 @@ class PilotePDF extends Galette\IO\Pdf {
     }
 
 }
-
-?>

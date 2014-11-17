@@ -28,6 +28,8 @@
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
  */
+use Zend\Db\Sql\Predicate\Expression;
+use Zend\Db\Sql\Predicate\Operator;
 
 /**
  * Class to store all informations of planes reservations
@@ -102,11 +104,11 @@ class PiloteReservation {
 
         if (is_int($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ' . $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array(self::PK => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
                 if ($cloned) {
                     unset($this->_reservation_id);
@@ -164,23 +166,26 @@ class PiloteReservation {
             }
 
             if ($values['id_instructeur'] == 'null') {
-                $values['id_instructeur'] = new Zend_Db_Expr('NULL');
+                $values['id_instructeur'] = new Expression('NULL');
             }
 
             $values['date_modification'] = date('Y-m-d H:i:s');
 
             if (!isset($this->_reservation_id) || $this->_reservation_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_reservation_id = $zdb->db->lastInsertId();
+                    $this->_reservation_id = $zdb->driver->getLastGeneratedValue();
                 } else {
                     throw new Exception(_T("RESERVATION.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_reservation_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_reservation_id));
+                $zdb->execute($update);
             }
             return true;
         } catch (Exception $e) {
@@ -205,16 +210,12 @@ class PiloteReservation {
     public static function getReservationsPourAvion($avion_id, $jour_debut, $jour_fin) {
         global $zdb;
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('id_avion = ' . $avion_id)
-                    ->where('heure_debut >= ?', $jour_debut . ' 00:00:00')
-                    ->where('heure_debut <= ?', $jour_fin . ' 23:59:59');
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('id_avion' => $avion_id, new Operator('heure_debut', Operator::OP_GTE, $jour_debut . ' 00:00:00'), new Operator('heure_debut', Operator::OP_LTE, $jour_fin . ' 23:59:59')));
             $reservations = array();
-            $rows = $select->query()->fetchAll();
+            $rows = $zdb->execute($select);
             foreach ($rows as $row) {
-                $resa = new PiloteReservation($row);
-                $reservations[] = $resa;
+                $reservations[] = new PiloteReservation($row);
             }
             return $reservations;
         } catch (Exception $e) {
@@ -237,7 +238,9 @@ class PiloteReservation {
         global $zdb;
 
         try {
-            $zdb->db->delete(PREFIX_DB . PILOTE_PREFIX . self::TABLE, self::PK . ' = ' . $reservation_id);
+            $delete = $zdb->delete(PILOTE_PREFIX . self::TABLE)
+                    ->where(array(self::PK => $reservation_id));
+            $zdb->execute($delete);
             return true;
         } catch (Exception $e) {
             Analog\Analog::log(
@@ -257,13 +260,11 @@ class PiloteReservation {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('est_rapproche = 0')
-                    ->where('heure_fin < ?', date('Y-m-d H:i:s'))
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('est_rapproche' => 0, new Operator('heure_fin', Operator::OP_LT, date('Y-m-d H:i:s'))))
                     ->order('heure_debut');
             $reservations = array();
-            $rows = $select->query()->fetchAll();
+            $rows = $zdb->execute($select);
             foreach ($rows as $row) {
                 $resa = new PiloteReservation($row);
                 $reservations[$resa->reservation_id] = $resa;
@@ -555,5 +556,3 @@ class CaseAgenda {
     }
 
 }
-
-?>

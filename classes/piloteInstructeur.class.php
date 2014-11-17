@@ -62,7 +62,6 @@ class PiloteInstructeur {
     private $_adherent_id;
     private $_date_creation;
     private $_date_modification;
-    private $_numero_ligne;
 
     /**
      * Construit un nouvel instructeur soit vierge, soit à partir de son ID, son code ou d'une ligne de BDD
@@ -74,11 +73,11 @@ class PiloteInstructeur {
 
         if (is_string($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where('code = ?', $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array('code' => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(
@@ -88,11 +87,11 @@ class PiloteInstructeur {
             }
         } else if (is_int($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ' . $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array(self::PK => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(
@@ -131,9 +130,11 @@ class PiloteInstructeur {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE);
-            return $select->query()->rowCount();
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('nb' => new Zend\Db\Sql\Predicate\Expression('count(*)')));
+
+            $result = $zdb->execute($select);
+            return $result->current()->nb;
         } catch (Exception $e) {
             Analog\Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
@@ -157,17 +158,15 @@ class PiloteInstructeur {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
                     ->order($tri . ' ' . $direction)
-                    ->limitPage($no_page, $lignes_par_page);
+                    ->limit($lignes_par_page)
+                    ->offset($no_page * $lignes_par_page);
 
             $instructeurs = array();
-            $result = $select->query()->fetchAll();
-            for ($i = 0; $i < count($result); $i++) {
-                $instructeur = new PiloteInstructeur($result[$i]);
-                $instructeur->numero_ligne = $i;
-                $instructeurs[$instructeur->_instructeur_id] = $instructeur;
+            $results = $zdb->execute($select);
+            foreach ($results as $row) {
+                $instructeurs[] = new PiloteInstructeur($row);
             }
             return $instructeurs;
         } catch (Exception $e) {
@@ -189,10 +188,11 @@ class PiloteInstructeur {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('code_adherent = ?', $login);
-            return $select->query()->rowCount() == 1 ? 1 : 0;
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('code_adherent' => $login));
+
+            $results = $zdb->execute($select);
+            return $results->count() == 1;
         } catch (Exception $e) {
             Analog\Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
@@ -221,16 +221,19 @@ class PiloteInstructeur {
 
             if (!isset($this->_instructeur_id) || $this->_instructeur_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_instructeur_id = $zdb->db->lastInsertId();
+                    $this->_instructeur_id = $zdb->driver->getLastGeneratedValue();
                 } else {
                     throw new Exception(_T("AVION.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_instructeur_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_instructeur_id));
+                $zdb->execute($update);
             }
             return true;
         } catch (Exception $e) {
@@ -272,7 +275,4 @@ class PiloteInstructeur {
         $rname = '_' . $name;
         $this->$rname = $value;
     }
-
 }
-
-?>

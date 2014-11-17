@@ -80,19 +80,17 @@ class PiloteAvion {
     private $_actif = true;
     private $_date_creation;
     private $_date_modification;
-    private $_numero_ligne;
     private $_picture;                  // photo de l'avion
     private $_date_debut;               // date début dispo
     private $_date_fin;                 // date fin dispo
     private $_tooltip;
 
     /**
-     * Construit un nouvel avion vierge ou en charge un depuis la base de données
+     * Construit un nouvel aeronef vierge ou en charge un depuis la base de données
      * à partir de son ID (int) ou son immatriculation (string)
      * 
      * @param int|string|object $args Peut être null, un ID, une immatriculation ou une ligne de BDD
      */
-
     public function __construct($args = null) {
         global $zdb;
 
@@ -100,11 +98,11 @@ class PiloteAvion {
 
         if (is_string($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where('immatriculation = ?', $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array('immatriculation' => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(
@@ -114,11 +112,11 @@ class PiloteAvion {
             }
         } else if (is_int($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ' . $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array(self::PK => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(
@@ -190,16 +188,19 @@ class PiloteAvion {
 
             if (!isset($this->_avion_id) || $this->_avion_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_avion_id = $zdb->db->lastInsertId();
+                    $this->_avion_id = $zdb->driver->getLastGeneratedValue();
                 } else {
                     throw new Exception(_T("AVION.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_avion_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_avion_id));
+                $zdb->execute($update);
             }
             return true;
         } catch (Exception $e) {
@@ -212,18 +213,19 @@ class PiloteAvion {
     }
 
     /**
-     * Renvoie le nombre d'avions actifs
+     * Renvoie le nombre d'aeronefs actifs
      * 
-     * @return int Le nombre d'avions actifs 
+     * @return int Le nombre d'aeronefs actifs 
      */
     public static function getNombreAvionsActifs() {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('actif = 1');
-            return $select->query()->rowCount();
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('nb' => new Zend\Db\Sql\Predicate\Expression('count(*)')))
+                    ->where(array('actif' => 1));
+            $result = $zdb->execute($select);
+            return $result->current()->nb;
         } catch (Exception $e) {
             Analog\Analog::log(
                     'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
@@ -233,17 +235,21 @@ class PiloteAvion {
         }
     }
 
+    /**
+     * Renvoie l'immatriculation d'un aeronef
+     * @param int $avion_id
+     * @return string
+     */
     public static function getImmatriculation($avion_id) {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, array('immatriculation'))
-                    ->where('avion_id = ?', $avion_id);
-            //Analog\Analog::log($select->assemble(), Analog\Analog::INFO);
-            if ($select->query()->rowCount() == 1) {
-                $immat = $select->query()->fetch();
-                return $immat->immatriculation;
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array('immatriculation'))
+                    ->where(array('avion_id' => $avion_id));
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return $result->current()->immatriculation;
             }
         } catch (Exception $e) {
             Analog\Analog::log(
@@ -255,7 +261,7 @@ class PiloteAvion {
     }
 
     /**
-     * Renvoi une liste d'avions actifs triés par par le tri
+     * Renvoi une liste d'aeronefs actifs triés par par le tri
      * 
      * @param string $tri Colonne de tri
      * @param string $direction asc ou desc
@@ -268,19 +274,17 @@ class PiloteAvion {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('actif = 1')
-                    ->joinLeft(PREFIX_DB . PILOTE_PREFIX . PiloteAvionDispo::TABLE, PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.' . self::PK . ' = ' . PREFIX_DB . PILOTE_PREFIX . PiloteAvionDispo::TABLE . '.avion_id', array('date_debut', 'date_fin'))
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('actif' => 1))
+                    ->join(PREFIX_DB . PILOTE_PREFIX . PiloteAvionDispo::TABLE, PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.' . self::PK . ' = ' . PREFIX_DB . PILOTE_PREFIX . PiloteAvionDispo::TABLE . '.avion_id', array('date_debut', 'date_fin'), 'left')
                     ->order(array($tri . ' ' . $direction, 'date_debut asc'))
-                    ->limitPage($no_page, $lignes_par_page);
+                    ->limit($lignes_par_page)
+                    ->offset($no_page * $lignes_par_page);
 
             $avions = array();
-            $result = $select->query()->fetchAll();
-            for ($i = 0; $i < count($result); $i++) {
-                $avion = new PiloteAvion($result[$i]);
-                $avion->numero_ligne = $i;
-                $avions[$avion->avion_id] = $avion;
+            $results = $zdb->execute($select);
+            foreach ($results as $row) {
+                $avions[] = new PiloteAvion($row);
             }
             return $avions;
         } catch (Exception $e) {
@@ -293,7 +297,7 @@ class PiloteAvion {
     }
 
     /**
-     * Renvoi tous les avions réservables pour la date donnée. Une entrée dans la table avions_dispo doit être présente
+     * Renvoi tous les aeronefs réservables pour la date donnée. Une entrée dans la table avions_dispo doit être présente
      * 
      * @return PiloteAvion 
      */
@@ -301,17 +305,14 @@ class PiloteAvion {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('actif = 1')
-                    ->where('est_reservable = 1')
-                    ->order('nom');
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('actif' => 1, 'est_reservable' => 1))
+                    ->order('marque_type');
 
             $avions = array();
-            $results = $select->query()->fetchAll();
+            $results = $zdb->execute($select);
             foreach ($results as $row) {
-                $avion = new PiloteAvion($row);
-                $avions[$avion->avion_id] = $avion;
+                $avions[] = new PiloteAvion($row);
             }
             return $avions;
         } catch (Exception $e) {

@@ -29,6 +29,7 @@
  * @since     Available since 0.7
  */
 
+use Zend\Db\Sql\Predicate\Expression;
 /**
  * Complementary informations for a pilot, that do not fit in adherent table
  *
@@ -40,8 +41,9 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GPL License 3.0 or later
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
-*/
+ */
 class PiloteAdherentComplement {
+
     const TABLE = "adherent_complement";
     const PK = "complement_id";
 
@@ -77,12 +79,12 @@ class PiloteAdherentComplement {
         if (is_object($args)) {
             $this->_loadFromRS($args);
         } else if (is_string($args)) {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
                     ->join(PREFIX_DB . Galette\Entity\Adherent::TABLE, PREFIX_DB . Galette\Entity\Adherent::TABLE . '.id_adh = ' . PREFIX_DB . PILOTE_PREFIX . self::TABLE . '.id_adherent')
-                    ->where(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh = ?', $args);
-            if ($select->query()->rowCount() == 1) {
-                $this->_loadFromRS($select->query()->fetch());
+                    ->where(array(PREFIX_DB . Galette\Entity\Adherent::TABLE . '.login_adh' => $args));
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                $this->_loadFromRS($result->current());
             }
         }
     }
@@ -146,11 +148,11 @@ class PiloteAdherentComplement {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('id_adherent = ?', $id);
-            if ($select->query()->rowCount() == 1) {
-                return new PiloteAdherentComplement($select->query()->fetch());
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('id_adherent' => $id));
+            $result = $zdb->execute($select);
+            if ($result->count() == 1) {
+                return new PiloteAdherentComplement($result->current());
             } else {
                 return new PiloteAdherentComplement();
             }
@@ -158,16 +160,6 @@ class PiloteAdherentComplement {
             Analog\Analog::log("Erreur" . $e->getMessage(), Analog\Analog::ERROR);
             return false;
         }
-    }
-
-    /**
-     * Retrieve fields from database
-     *
-     * @return array
-     */
-    public static function getDbFields() {
-        global $zdb;
-        return array_keys($zdb->db->describeTable(PREFIX_DB . PILOTE_PREFIX . self::TABLE));
     }
 
     /**
@@ -188,25 +180,27 @@ class PiloteAdherentComplement {
             //an empty value will cause date to be set to 1901-01-01, a null
             //will result in 0000-00-00. We want a database NULL value here.
             if (!$this->_date_dernier_vol || $this->_date_dernier_vol == '') {
-                $values['date_dernier_vol'] = new Zend_Db_Expr('NULL');
+                $values['date_dernier_vol'] = new Expression('NULL');
             }
             if (!$this->_date_fin_license || $this->_date_fin_license == '') {
-                $values['date_fin_license'] = new Zend_Db_Expr('NULL');
+                $values['date_fin_license'] = new Expression('NULL');
             }
             if (!$this->_date_visite_medicale || $this->_date_visite_medicale == '') {
-                $values['date_visite_medicale'] = new Zend_Db_Expr('NULL');
+                $values['date_visite_medicale'] = new Expression('NULL');
             }
             if ($this->_date_vol_controle || $this->_date_vol_controle == '') {
-                $values['date_vol_controle'] = new Zend_Db_Expr('NULL');
+                $values['date_vol_controle'] = new Expression('NULL');
             }
 
             $values['date_modification'] = date('Y-m-d H:i:s');
 
             if (!isset($this->_complement_id) || $this->_complement_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_complement_id = $zdb->db->lastInsertId();
+                    $this->_complement_id = $zdb->driver->getLastGeneratedValue();
                     // logging
                     $hist->add(_T("COMPLEMENT.AJOUT SUCCES"), strtoupper($this->_login_adh));
                 } else {
@@ -214,9 +208,10 @@ class PiloteAdherentComplement {
                     throw new Exception(_T("COMPLEMENT.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_complement_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_complement_id));
+                $edit = $zdb->execute($update);
                 //edit == 0 does not mean there were an error, but that there
                 //were nothing to change
                 if ($edit > 0) {
@@ -240,10 +235,10 @@ class PiloteAdherentComplement {
      * 
      * @return bool 
      */
-    public function isDateLicenseOuMedicaleDepassee(){
+    public function isDateLicenseOuMedicaleDepassee() {
         return $this->_date_fin_license < date('Y-m-d') || $this->_date_visite_medicale < date('Y-m-d');
     }
-    
+
     /**
      * Global getter method
      *
@@ -293,7 +288,4 @@ class PiloteAdherentComplement {
         $rname = '_' . $name;
         $this->$rname = $value;
     }
-
 }
-
-?>

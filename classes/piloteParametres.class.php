@@ -41,8 +41,9 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GPL License 3.0 or later
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
-*/
+ */
 class PiloteParametre {
+
     const TABLE = 'parametres';
     const PK = 'code';
     const PARAM_DERNIER_IMPORT = 'DATE_DERNIER_IMPORT';
@@ -62,7 +63,7 @@ class PiloteParametre {
     const PARAM_BLOCAGE_MESSAGE_WARNING = 'BLOCAGE_MESSAGE_WARNING';
     const PARAM_BLOCAGE_MESSAGE_BLOQUE = 'BLOCAGE_MESSAGE_BLOQUE';
     const PARAM_INSTRUCTEUR_RESERVATION = 'INSTRUCTEUR_RESA';
-    
+
     private $_fields = array(
         '_parametre_id' => 'int',
         '_code' => 'string',
@@ -113,11 +114,11 @@ class PiloteParametre {
 
         if (is_string($args) && strlen($args) > 0) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where('code = ?', $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array('code' => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
                 $this->_code = $args;
             } catch (Exception $e) {
@@ -200,21 +201,24 @@ class PiloteParametre {
             //an empty value will cause date to be set to 1901-01-01, a null
             //will result in 0000-00-00. We want a database NULL value here.
             if (!$this->_valeur_date || $this->_valeur_date == '') {
-                $values['valeur_date'] = new Zend_Db_Expr('NULL');
+                $values['valeur_date'] = new Zend\Db\Sql\Predicate\Expression('NULL');
             }
 
             $values['date_modification'] = date('Y-m-d H:i:s');
 
             if (!isset($this->_parametre_id) || $this->_parametre_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
-                    $this->_parametre_id = $zdb->db->lastInsertId();
+                    $this->_parametre_id = $zdb->driver->getLastGeneratedValue();
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . ' = "' . $this->_code . '"'
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_code));
+                $zdb->execute($update);
             }
             return true;
         } catch (Exception $e) {
@@ -239,16 +243,14 @@ class PiloteParametre {
         if (array_key_exists($code, self::$_valeurs_parametres)) {
             return self::$_valeurs_parametres[$code];
         } else {
+            Analog\Analog::log('Get all parameters from BDD', Analog\Analog::DEBUG);
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ?', $code);
-                if ($select->query()->rowCount() == 1) {
-                    $parametre = $select->query()->fetch();
-                    self::_metEnCacheParametre($parametre);
-                    return self::$_valeurs_parametres[$parametre->code];
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE);
+                $parametres = $zdb->execute($select);
+                foreach ($parametres as $p) {
+                    self::_metEnCacheParametre($p);
                 }
-                return false;
+                return self::$_valeurs_parametres[$code];
             } catch (Exception $e) {
                 Analog\Analog::log("Erreur" . $e->getMessage(), Analog\Analog::ERROR);
                 return false;
@@ -267,17 +269,18 @@ class PiloteParametre {
         global $zdb;
 
         if (array_key_exists($code, self::$_libelle_parametres)) {
+            Analog\Analog::log('Get libelle ' . $code . ' from cache ;-)', Analog\Analog::DEBUG);
             return self::$_libelle_parametres[$code];
         } else {
+            Analog\Analog::log('Get libelle ' . $code . ' from BDD :-(', Analog\Analog::DEBUG);
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ?', $code);
-                if ($select->query()->rowCount() == 1) {
-                    $parametre = $select->query()->fetch();
-                    self::_metEnCacheParametre($parametre);
-                    return self::$_libelle_parametres[$parametre->code];
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE);
+
+                $parametres = $zdb->execute($select);
+                foreach ($parametres as $p) {
+                    self::_metEnCacheParametre($p);
                 }
+                return self::$_libelle_parametres[$code];
             } catch (Exception $e) {
                 Analog\Analog::log("Erreur" . $e->getMessage(), Analog\Analog::ERROR);
                 return false;
@@ -293,13 +296,13 @@ class PiloteParametre {
     public static function getTousCodesParametres() {
         global $zdb;
 
-        $liste_codes = array();
         $code = self::PK;
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE, self::PK)
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->columns(array($code))
                     ->order('1');
-            $rows = $select->query()->fetchAll();
+            $rows = $zdb->execute($select);
+            $liste_codes = array();
             foreach ($rows as $row) {
                 $liste_codes[] = $row->$code;
             }
@@ -324,13 +327,18 @@ class PiloteParametre {
          * Query pour voir si la table existe ou non
          */
         try {
-            $select = $zdb->db->query('SHOW TABLES LIKE ?', $nom_table);
-            $rows = $select->fetchAll();
+            $metadata = new \Zend\Db\Metadata\Metadata($zdb->db);
+            $tmp_tables_list = $metadata->getTableNames();
+            foreach ($tmp_tables_list as $table_name) {
+                if ($table_name == $nom_table) {
+                    return true;
+                }
+            }
         } catch (Exception $e) {
             Analog\Analog::log('Erreur SQL ' . $e->getMessage(), Analog\Analog::ERROR);
             return false;
         }
-        return count($rows) == 1;
+        return false;
     }
 
     /**
@@ -347,9 +355,10 @@ class PiloteParametre {
          * Query pour connaitre le nombre d'enregistrement
          */
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from($nom_table, 'count(*) as nb');
-            return $select->query()->fetch()->nb;
+            $select = $zdb->select($nom_table)
+                    ->columns(array('nb' => new Zend\Db\Sql\Predicate\Expression('count(*)')));
+            $result = $zdb->execute($select);
+            return $result->current()->nb;
         } catch (Exception $e) {
             Analog\Analog::log('Erreur SQL ' . $e->getMessage(), Analog\Analog::ERROR);
             return false;
@@ -367,14 +376,16 @@ class PiloteParametre {
         global $zdb;
 
         try {
-            $select = $zdb->db->query('SHOW COLUMNS FROM ' . $nom_table . ' LIKE "version%"');
-            if ($select->rowCount() == 1) {
-                $row = $select->fetch();
-                return str_replace('version_', '', $row->Field);
-            } else {
-                return 'N/A';
+            $metadata = new \Zend\Db\Metadata\Metadata($zdb->db);
+            $table = $metadata->getTable($nom_table);
+            $columns = $table->getColumns();
+            foreach ($columns as $col) {
+                $colname = $col->getName();
+                if (strpos($colname, 'version') !== FALSE) {
+                    return str_replace('version_', '', $colname);
+                }
             }
-            return $select->query()->fetch()->nb;
+            return 'N/A';
         } catch (Exception $e) {
             Analog\Analog::log('Erreur SQL ' . $e->getMessage(), Analog\Analog::ERROR);
             return false;
@@ -388,9 +399,11 @@ class PiloteParametre {
      */
     private static function _metEnCacheParametre($parametre) {
         if ($parametre->est_date) {
-            $dt = date_create_from_format('Y-m-d', $parametre->valeur_date);
-            self::$_valeurs_parametres[$parametre->code] = $dt->format('d/m/Y');
-            self::$_libelle_parametres[$parametre->code] = $parametre->libelle;
+            if ($parametre->valeur_date !== NULL) {
+                $dt = date_create_from_format('Y-m-d', $parametre->valeur_date);
+                self::$_valeurs_parametres[$parametre->code] = $dt->format('d/m/Y');
+                self::$_libelle_parametres[$parametre->code] = $parametre->libelle;
+            }
         } else if ($parametre->est_texte) {
             self::$_valeurs_parametres[$parametre->code] = $parametre->valeur_texte;
             self::$_libelle_parametres[$parametre->code] = $parametre->libelle;
@@ -415,18 +428,16 @@ class PiloteParametre {
      * @return string La pagination faite
      */
     public static function faitPagination($no_page, $tri, $direction, $nb_objet, $nb_lignes, $complement) {
-        global $preferences;
-
         if ($nb_objet < $nb_lignes) {
             return '';
         }
 
         $pagination = '<a href="?tri=' . $tri . '&direction=' . $direction . '&page=1&nb_lignes=' . $nb_lignes . $complement . '" title="Atteindre la rremière page">|&lt;&lt;</a> &#xB7; ';
-        for ($i = 1; $i <= ceil($nb_objet / $nb_lignes); $i++) {
+        for ($i = 0; $i < ceil($nb_objet / $nb_lignes); $i++) {
             if ($no_page == $i) {
                 $pagination .= '<b>';
             }
-            $pagination .= '<a href="?tri=' . $tri . '&direction=' . $direction . '&page=' . $i . '&nb_lignes=' . $nb_lignes . $complement . '" title="Atteindre la page ' . $i . '">' . $i . '</a>';
+            $pagination .= '<a href="?tri=' . $tri . '&direction=' . $direction . '&page=' . $i . '&nb_lignes=' . $nb_lignes . $complement . '" title="Atteindre la page ' . ($i + 1) . '">' . ($i + 1) . '</a>';
             if ($no_page == $i) {
                 $pagination .= '</b>';
             }
@@ -477,7 +488,7 @@ class PiloteParametre {
      * 
      * @return string la nouvelle couleur #rrggbb plus sombre
      */
-    public static function assombrirCouleur($color, $dif=30) {
+    public static function assombrirCouleur($color, $dif = 30) {
 
         $color = str_replace('#', '', $color);
         if (strlen($color) != 6) {
@@ -495,5 +506,3 @@ class PiloteParametre {
     }
 
 }
-
-?>

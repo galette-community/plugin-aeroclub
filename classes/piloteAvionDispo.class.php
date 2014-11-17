@@ -40,8 +40,9 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GPL License 3.0 or later
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
-*/
+ */
 class PiloteAvionDispo {
+
     const TABLE = 'avions_dispo';
     const PK = 'dispo_id';
 
@@ -71,11 +72,11 @@ class PiloteAvionDispo {
 
         if (is_int($args)) {
             try {
-                $select = new Zend_Db_Select($zdb->db);
-                $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                        ->where(self::PK . ' = ' . $args);
-                if ($select->query()->rowCount() == 1) {
-                    $this->_loadFromRS($select->query()->fetch());
+                $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                        ->where(array(self::PK => $args));
+                $result = $zdb->execute($select);
+                if ($result->count() == 1) {
+                    $this->_loadFromRS($result->current());
                 }
             } catch (Exception $e) {
                 Analog\Analog::log(
@@ -120,23 +121,26 @@ class PiloteAvionDispo {
             }
 
             if (!$this->_date_fin || $this->_date_fin == '') {
-                $values['date_fin'] = new Zend_Db_Expr('NULL');
+                $values['date_fin'] = new Zend\Db\Sql\Predicate\Expression('NULL');
             }
 
             $values['date_modification'] = date('Y-m-d H:i:s');
 
             if (!isset($this->_dispo_id) || $this->_dispo_id == '') {
                 $values['date_creation'] = date('Y-m-d H:i:s');
-                $add = $zdb->db->insert(PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values);
+                $insert = $zdb->insert(PILOTE_PREFIX . self::TABLE)
+                        ->values($values);
+                $add = $zdb->execute($insert);
                 if ($add > 0) {
                     $this->_dispo_id = $zdb->db->lastInsertId();
                 } else {
                     throw new Exception(_T("AVION.AJOUT ECHEC"));
                 }
             } else {
-                $edit = $zdb->db->update(
-                        PREFIX_DB . PILOTE_PREFIX . self::TABLE, $values, self::PK . '=' . $this->_dispo_id
-                );
+                $update = $zdb->update(PILOTE_PREFIX . self::TABLE)
+                        ->set($values)
+                        ->where(array(self::PK => $this->_dispo_id));
+                $zdb->execute($update);
             }
             return true;
         } catch (Exception $e) {
@@ -159,15 +163,13 @@ class PiloteAvionDispo {
         global $zdb;
 
         try {
-            $select = new Zend_Db_Select($zdb->db);
-            $select->from(PREFIX_DB . PILOTE_PREFIX . self::TABLE)
-                    ->where('avion_id = ?', $avion_id)
+            $select = $zdb->select(PILOTE_PREFIX . self::TABLE)
+                    ->where(array('avion_id' => $avion_id))
                     ->order('date_debut asc');
             $dispo = array();
-            $results = $select->query()->fetchAll();
+            $results = $zdb->execute($select);
             foreach ($results as $row) {
-                $d = new PiloteAvionDispo($row);
-                $dispo[$d->dispo_id] = $d;
+                $dispo[] = new PiloteAvionDispo($row);
             }
             return $dispo;
         } catch (Exception $e) {

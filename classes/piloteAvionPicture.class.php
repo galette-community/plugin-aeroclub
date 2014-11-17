@@ -251,7 +251,4 @@ class PiloteAvionPicture extends Galette\Core\Picture {
 
         return $result;
     }
-
 }
-
-?>
