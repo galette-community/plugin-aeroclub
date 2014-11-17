@@ -66,8 +66,15 @@ if ($annee_selectionnee != _T('COMPTE VOL.TOUTES')) {
 } else {
     $toutes_operations = PiloteOperation::getOperationsForLogin($pseudo, '1', 'asc', 1, 99999);
 }
+
+$solde_trouve = false;
 foreach ($toutes_operations as $operation) {
-    $solde += $operation->montant_operation;
+    if ($operation->type_operation != '****' || ($operation->type_operation == '****' && !$solde_trouve)) {
+        $solde += $operation->montant_operation;
+        if ($operation->type_operation == '****') {
+            $solde_trouve = true;
+        }
+    }
     $total_vols += $operation->duree_minute;
 }
 

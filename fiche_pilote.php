@@ -56,6 +56,7 @@ $liste_adherents = PiloteOperation::getAdherentsActifs();
 $dernier_vol = PiloteOperation::getDernierVolForLogin($pseudo);
 
 $adh = new Galette\Entity\Adherent($pseudo);
+
 $tpl->assign('liste_adherents', $liste_adherents);
 $tpl->assign('adherent_selectionne', $pseudo);
 $tpl->assign('adherent', $adh);

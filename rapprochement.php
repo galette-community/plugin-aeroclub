@@ -77,7 +77,7 @@ if (array_key_exists('sauver', $_POST)) {
 /**
  * Récupération de la liste des instructeurs
  */
-$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 1, 9999);
+$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 0, 9999);
 
 /**
  * Récupération de la liste des avions

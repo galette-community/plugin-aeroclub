@@ -140,7 +140,7 @@ $tpl->assign('liste_adherents', $liste_adherents);
 $tpl->assign('liste_type_operations', $liste_type_operations);
 $tpl->assign('liste_avions', PiloteAvion::getTousAvionsReservables());
 $tpl->assign('liste_type_vols', $liste_type_vols);
-$tpl->assign('liste_instructeurs', PiloteInstructeur::getTousInstructeurs('nom', 'asc', 1, 9999));
+$tpl->assign('liste_instructeurs', PiloteInstructeur::getTousInstructeurs('nom', 'asc', 0, 9999));
 $tpl->assign('require_calendar', true);
 $tpl->assign('origine', $_GET['origine']);
 $tpl->assign('login_adherent', $login_adherent);

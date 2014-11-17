@@ -43,6 +43,7 @@ function dateIHMtoSQL($str) {
     $dt = date_create_from_format('d/m/Y', $str);
     return $dt->format('Y-m-d');
 }
+
 /**
  * Convertit une date du format SQL 'aaaa-mm-jj' vers le format IHM 'jj/mm/aaaa'
  * 
@@ -93,22 +94,25 @@ $param_web = array(
 $erreurs = false;
 $parametres_sauves = false;
 $liste_erreurs = array();
-if (array_key_exists('liste_codes', $_POST)) {
+if (filter_has_var(INPUT_POST, 'liste_codes')) {
     $parametres_sauves = true;
-    $liste_codes = $_POST['liste_codes'];
+    $liste_codes = filter_input(INPUT_POST, 'liste_codes', FILTER_SANITIZE_STRING, FILTER_REQUIRE_ARRAY);
     foreach ($liste_codes as $code_param) {
-        if ($_POST['valeur_' . $code_param] != $_POST['ancienne_valeur_' . $code_param]) {
+        if (filter_input(INPUT_POST, 'valeur_' . $code_param) != filter_input(INPUT_POST, 'ancienne_valeur_' . $code_param)) {
             try {
                 $values = array(
-                    'est_date' => $_POST['format_' . $code_param] == 'date' ? true : false,
-                    'valeur_date' => $_POST['format_' . $code_param] == 'date' ? dateIHMtoSQL($_POST['valeur_' . $code_param]) : new Zend_Db_Expr('NULL'),
-                    'est_texte' => $_POST['format_' . $code_param] == 'texte' ? true : false,
-                    'valeur_texte' => $_POST['format_' . $code_param] == 'texte' ? $_POST['valeur_' . $code_param] : new Zend_Db_Expr('NULL'),
-                    'est_numerique' => $_POST['format_' . $code_param] == 'numerique' ? true : false,
-                    'valeur_numerique' => $_POST['format_' . $code_param] == 'numerique' ? $_POST['valeur_' . $code_param] : new Zend_Db_Expr('NULL'),
+                    'est_date' => filter_input(INPUT_POST, 'format_' . $code_param) == 'date' ? true : false,
+                    'valeur_date' => filter_input(INPUT_POST, 'format_' . $code_param) == 'date' ? dateIHMtoSQL(filter_input(INPUT_POST, 'valeur_' . $code_param)) : new Zend\Db\Sql\Predicate\Expression('NULL'),
+                    'est_texte' => filter_input(INPUT_POST, 'format_' . $code_param) == 'texte' ? true : false,
+                    'valeur_texte' => filter_input(INPUT_POST, 'format_' . $code_param) == 'texte' ? filter_input(INPUT_POST, 'valeur_' . $code_param) : new Zend\Db\Sql\Predicate\Expression('NULL'),
+                    'est_numerique' => filter_input(INPUT_POST, 'format_' . $code_param) == 'numerique' ? true : false,
+                    'valeur_numerique' => filter_input(INPUT_POST, 'format_' . $code_param) == 'numerique' ? filter_input(INPUT_POST, 'valeur_' . $code_param) : new Zend\Db\Sql\Predicate\Expression('NULL'),
                     'date_modification' => date('Y-m-d H:i:s')
                 );
-                $zdb->db->update(PREFIX_DB . PILOTE_PREFIX . PiloteParametre::TABLE, $values, PiloteParametre::PK . ' = \'' . $code_param . '\'');
+                $update = $zdb->update(PILOTE_PREFIX . PiloteParametre::TABLE)
+                        ->set($values)
+                        ->where(array(PiloteParametre::PK => $code_param));
+                $zdb->execute($update);
             } catch (Exception $e) {
                 $liste_erreurs[] = 'Sauvegarde du paramètre ' . $code_param . ' échouée.';
                 $erreurs = true;
@@ -127,10 +131,9 @@ if (array_key_exists('liste_codes', $_POST)) {
 $parametres = array();
 $parametres_web = array();
 try {
-    $select = new Zend_Db_Select($zdb->db);
-    $select->from(PREFIX_DB . PILOTE_PREFIX . PiloteParametre::TABLE)
+    $select = $zdb->select(PILOTE_PREFIX . PiloteParametre::TABLE)
             ->order(PiloteParametre::PK);
-    $rows = $select->query()->fetchAll();
+    $rows = $zdb->execute($select);
 
     foreach ($rows as $r) {
         $param = new PiloteParametre($r);
@@ -174,4 +177,3 @@ $tpl->assign('content', $content);
 //Set path to main Galette's template
 $tpl->template_dir = $orig_template_path;
 $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>

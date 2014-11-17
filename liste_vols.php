@@ -28,7 +28,6 @@
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
  */
-
 define('GALETTE_BASE_PATH', '../../');
 require_once GALETTE_BASE_PATH . 'includes/galette.inc.php';
 if (!$login->isLogged()) {
@@ -42,16 +41,16 @@ require_once '_config.inc.php';
 /**
  * Variables de tri + année sélectionnée
  */
-$tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'date';
-$direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
-$annee_selectionnee = array_key_exists('compte_annee', $_GET) ? $_GET['compte_annee'] : date('Y');
-$page = array_key_exists('page', $_GET) ? $_GET['page'] : 1;
-$nb_lignes = array_key_exists('nb_lignes', $_GET) ? $_GET['nb_lignes'] : $preferences->pref_numrows;
+$tri = filter_has_var(INPUT_GET, 'tri') ? filter_input(INPUT_GET, 'tri') : 'date';
+$direction = filter_has_var(INPUT_GET, 'direction') ? filter_input(INPUT_GET, 'direction') : 'asc';
+$annee_selectionnee = filter_has_var(INPUT_GET, 'compte_annee') ? filter_input(INPUT_GET, 'compte_annee') : date('Y');
+$page = filter_has_var(INPUT_GET, 'page') ? filter_input(INPUT_GET, 'page') : 0;
+$nb_lignes = filter_has_var(INPUT_GET, 'nb_lignes') ? filter_input(INPUT_GET, 'nb_lignes') : $preferences->pref_numrows;
 $pseudo = $login->login;
 $complement = '';
-if ($login->isAdmin() && array_key_exists('login_adherent', $_GET)) {
-    $pseudo = $_GET['login_adherent'];
-    $complement = '&login_adherent=' . $pseudo;
+if ($login->isAdmin() && filter_has_var(INPUT_GET, 'login_adherent')) {
+    $pseudo = filter_input(INPUT_GET, 'login_adherent');
+    $complement = '&login_adherent=' . filter_input(INPUT_GET, 'login_adherent');
 }
 
 $liste_nb_lignes = array(10, 20, 30, 40, 50, 100, 150, 200, 300, 500);
@@ -97,7 +96,6 @@ if ($annee_selectionnee != _T('COMPTE VOL.TOUTES')) {
     $liste_operations = PiloteOperation::getVolsForLogin($pseudo, $tri_colonne, $direction, $page, $nb_lignes);
     $nb_operations = PiloteOperation::getNombreVolsForLogin($pseudo);
 }
-$liste_annees = array();
 
 /**
  * Calcul de la pagination
@@ -133,12 +131,11 @@ $tpl->assign('liste_adherents', $liste_adherents);
 $tpl->assign('adherent_selectionne', $pseudo);
 $tpl->assign('complement', $complement);
 
-$tpl->assign('enregistre', array_key_exists('msg', $_GET) && $_GET['msg'] == 'ok');
-$tpl->assign('pas_enregistre', array_key_exists('msg', $_GET) && $_GET['msg'] == 'annule');
+$tpl->assign('enregistre', filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'ok');
+$tpl->assign('pas_enregistre', filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'annule');
 
 $content = $tpl->fetch('liste_vols.tpl', PILOTE_SMARTY_PREFIX);
 $tpl->assign('content', $content);
 //Set path to main Galette's template
 $tpl->template_dir = $orig_template_path;
 $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>

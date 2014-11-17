@@ -57,10 +57,12 @@ require_once '_config.inc.php';
 /**
  * Récupération des valeurs du jour et avion
  */
-$jour_selectionne = array_key_exists('jour', $_GET) ? $_GET['jour'] : date('Ymd');
+$jour_selectionne = filter_has_var(INPUT_GET, 'jour') ? filter_input(INPUT_GET, 'jour') : date('Ymd');
 
-$resa_ok = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_ok';
-$resa_annule = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_annule';
+$resa_ok = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'resa_ok';
+$resa_annule = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'resa_annule';
+
+$ajax = filter_has_var(INPUT_GET, 'mode') && filter_input(INPUT_GET, 'mode') == 'ajax';
 
 /**
  * Calcul des jours affichés
@@ -84,9 +86,9 @@ for ($i = 0; $i < 7; $i++) {
     $tooltip_jours[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = $num_jour_ann;
 
     // Calcul du levé/couché
-    $levercoucher = PiloteReservation::getLeverCoucher(date('j', strtotime('+' . $i . ' days', strtotime($depart))), date('n', strtotime('+' . $i . ' days', strtotime($depart))), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LATITUDE)), doubleval(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LONGITUDE)));
-    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = new stdClass();
-    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->lever = $levercoucher['lever'];
+    $levercoucher = PiloteReservation ::getLeverCoucher(date('j', strtotime('+' . $i . ' days', strtotime($depart))), date('n', strtotime('+' . $i . ' days', strtotime($depart))), doubleval(PiloteParametre:: getValeurParametre(PiloteParametre::PARAM_AEROCLUB_LATITUDE)), doubleval(PiloteParametre::getValeurParametre(PiloteParametre ::PARAM_AEROCLUB_LONGITUDE)));
+    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))] = new stdClass ( );
+    $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->lever = $levercoucher ['lever'];
     $ephemeride[date('Ymd', strtotime('+' . $i . ' days', strtotime($depart)))]->coucher = $levercoucher['coucher'];
 }
 
@@ -108,7 +110,7 @@ foreach ($liste_avions as $avion) {
         $size = PiloteAvionPicture::hauteurLargeurAvionPicture($avion->immatriculation);
         $avion->tooltip = '<img src=\'picture.php?quick=1&avion_id=' . $avion->immatriculation . '\' width=\'' . $size->width . '\' height=\'' . $size->height . '\'/>';
     }
-    $avion->tooltip.= '<center><b>' . $avion->marque_type . '</b> (' . $avion->immatriculation . ')' .
+    $avion->tooltip .= '<center><b>' . $avion->marque_type . '</b> (' . $avion->immatriculation . ')' .
             '<br/>' . $avion->type_aeronef . '</center>';
 }
 
@@ -123,7 +125,7 @@ foreach ($liste_avions as $avion) {
 }
 
 // Instructeurs: liste + connecté
-$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 1, 9999);
+$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 0, 9999);
 $is_instructeur = PiloteInstructeur::isPiloteInstructeur($login->login);
 
 /**
@@ -177,14 +179,14 @@ foreach ($liste_avions as $avion) {
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->libre = false;
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->masquer = false;
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->nom = $resa->nom;
-                    $planning[$avion->avion_id]->reservations[$jourCode][$h]->editable = $resa->id_adherent == $login->id;
+                    $planning[$avion->avion_id]->reservations [$jourCode][$h]->editable = $resa->id_adherent == $login->id;
                     // Si instructeur, on a le droit de modifier les résa dont on est instructeur
                     if ($is_instructeur && $resa->id_instructeur != '' && $liste_instructeurs[$resa->id_instructeur]->adherent_id == $login->id) {
                         $planning[$avion->avion_id]->reservations[$jourCode][$h]->editable = true;
                     }
                     // On redéfinit "cliquable" pour autoriser la modification
                     // d'une résa si la date de fin est inférieur à la date actuelle
-                    $planning[$avion->avion_id]->reservations[$jourCode][$h]->cliquable = date('Y-m-d H:i:s') <= $resa->heure_fin;
+                    $planning[$avion->avion_id]->reservations [$jourCode][$h]->cliquable = date('Y-m-d H:i:s') <= $resa->heure_fin;
 
                     // Définition infos résa
                     $planning[$avion->avion_id]->reservations[$jourCode][$h]->resa_id = $resa->reservation_id;
@@ -194,10 +196,7 @@ foreach ($liste_avions as $avion) {
                     if ($resa->id_instructeur != '') {
                         $planning[$avion->avion_id]->reservations[$jourCode][$h]->instructeur = $liste_instructeurs[$resa->id_instructeur]->nom . ' (' . $liste_instructeurs[$resa->id_instructeur]->code . ')';
                     }
-                    $planning[$avion->avion_id]->reservations[$jourCode][$h]->infobulle = $resa->nom
-                            . (strlen(trim($resa->no_portable)) > 0 ? "<br/><img src='picts/mobile-phone.png' title='N° de téléphone portable'> " . $resa->no_portable : "")
-                            . (strlen(trim($resa->destination)) > 0 ? "<br/><img src='picts/destination.png' title='Destination du vol'> " . $resa->destination : "")
-                            . (strlen(trim($resa->commentaires)) > 0 ? "<br/><img src='picts/comment.png' title='Commentaires sur la réservation'> <i>" . $resa->commentaires . "</i>" : "")
+                    $planning[$avion->avion_id]->reservations[$jourCode][$h]->infobulle = $resa->nom . (strlen(trim($resa->no_portable)) > 0 ? "<br/><img src='picts/mobile-phone.png' title='N° de téléphone portable'> " . $resa->no_portable : "") . (strlen(trim($resa->destination)) > 0 ? "<br/><img src='picts/destination.png' title='Destination du vol'> " . $resa->destination : "") . (strlen(trim($resa->commentaires)) > 0 ? "<br/><img src='picts/comment.png' title='Commentaires sur la réservation'> <i>" . $resa->commentaires . "</i>" : "")
                             . ($resa->id_instructeur != '' ? "<br/><img src='picts/instructeur.png'> " . $planning[$avion->avion_id]->reservations[$jourCode][$h]->instructeur : "");
 
                     // Calcul du rowspan
@@ -206,7 +205,7 @@ foreach ($liste_avions as $avion) {
                     $d_debut = new DateTime($resa->heure_debut);
                     $d_fin = new DateTime($resa->heure_fin);
                     $diff = $d_debut->diff($d_fin);
-                    $planning[$avion->avion_id]->reservations[$jourCode][$h]->rowspan = (intval($diff->format('%h')) * 60 + intval($diff->format('%i'))) / 30;
+                    $planning[$avion->avion_id]->reservations [$jourCode] [$h]->rowspan = (intval($diff->format('%h')) * 60 + intval($diff->format('%i'))) / 30;
                 }
                 // Si la date de la case est entre la date de début et de fin de la résa
                 // on n'affiche pas la case (à cause du rowspan)
@@ -246,7 +245,7 @@ $tpl->assign('couleur_libre', PiloteParametre::getValeurParametre(PiloteParametr
 $tpl->assign('couleur_libre_clair', PiloteParametre::eclaircirCouleurHexa(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COULEUR_LIBRE)));
 $tpl->assign('couleur_libre_nuit', PiloteParametre::assombrirCouleur(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COULEUR_LIBRE)));
 $tpl->assign('couleur_reserve', PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COULEUR_RESERVE));
-$tpl->assign('couleur_interdit', PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COULEUR_INTERDIT));
+$tpl->assign('couleur_interdit', PiloteParametre::getValeurParametre(PiloteParametre:: PARAM_COULEUR_INTERDIT));
 $tpl->assign('couleur_interdit_nuit', PiloteParametre::assombrirCouleur(PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COULEUR_INTERDIT)));
 
 // Calendrier principal : heures et résas
@@ -256,10 +255,14 @@ $tpl->assign('heures', $heures);
 // Messages informatifs
 $tpl->assign('resa_ok', $resa_ok);
 $tpl->assign('resa_annule', $resa_annule);
+$tpl->assign('ajax', $ajax);
 
-$content = $tpl->fetch('planning.tpl', PILOTE_SMARTY_PREFIX);
-$tpl->assign('content', $content);
-//Set path to main Galette's template
-$tpl->template_dir = $orig_template_path;
-$tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>
+if ($ajax) {
+    $tpl->display('planning.tpl', PILOTE_SMARTY_PREFIX);
+} else {
+    $content = $tpl->fetch('planning.tpl', PILOTE_SMARTY_PREFIX);
+    $tpl->assign('content', $content);
+    //Set path to main Galette's template
+    $tpl->template_dir = $orig_template_path;
+    $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
+}

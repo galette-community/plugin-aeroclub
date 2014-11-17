@@ -41,16 +41,16 @@ require_once '_config.inc.php';
 /**
  * Variables de tri
  */
-$tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'code';
-$direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
-$page = array_key_exists('page', $_GET) ? $_GET['page'] : 1;
+$tri = filter_has_var(INPUT_GET, 'tri') ? filter_input(INPUT_GET, 'tri') : 'nom';
+$direction = filter_has_var(INPUT_GET, 'direction') ? filter_input(INPUT_GET, 'direction') : 'asc';
+$page = filter_has_var(INPUT_GET, 'page') ? filter_input(INPUT_GET, 'page') : 0;
 
 $liste_instructeurs = PiloteInstructeur::getTousInstructeurs($tri, $direction, $page, $preferences->pref_numrows);
 $nb_instructeurs = PiloteInstructeur::getNombreInstructeurs();
 
-$enregistre = $_GET['msg'] == 'enregistre';
-$pas_enregistre = $_GET['msg'] == 'pas_enregistre';
-$supprime = $_GET['msg'] == 'supprime';
+$enregistre = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'enregistre';
+$pas_enregistre = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'pas_enregistre';
+$supprime = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'supprime';
 
 /**
  * Calcul de la pagination
@@ -78,6 +78,3 @@ $tpl->assign('content', $content);
 //Set path to main Galette's template
 $tpl->template_dir = $orig_template_path;
 $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-
-
-?>

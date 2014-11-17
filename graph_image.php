@@ -250,4 +250,3 @@ header("Content-Disposition:inline ; filename=graph_image.png");
 
 // Ecriture de l'image en PNG
 imagepng($image);
-?>

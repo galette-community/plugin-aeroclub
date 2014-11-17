@@ -69,19 +69,19 @@ $solde = array_key_exists('solde', $_GET) ? $_GET['solde'] : 'all';
 
 switch ($tri) {
     case 'nom':
-        $tri_sql = '1';
+        $tri_sql = 'nom_adh';
         break;
     case 'prenom':
-        $tri_sql = '2';
+        $tri_sql = 'prenom_adh';
         break;
     case 'pseudo':
-        $tri_sql = '3';
+        $tri_sql = 'login_adh';
         break;
     case 'email':
-        $tri_sql = '4';
+        $tri_sql = 'email_adh';
         break;
     case 'solde':
-        $tri_sql = '5';
+        $tri_sql = 'solde';
         break;
 }
 

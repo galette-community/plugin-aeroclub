@@ -56,13 +56,13 @@ switch ($tri) {
         $tri_sql = 'immat';
         break;
     case 'an-1':
-        $tri_sql = 'somme2011';
+        $tri_sql = 'somme_last_year';
         break;
     case 'an':
-        $tri_sql = 'somme2012';
+        $tri_sql = 'somme_this_year';
         break;
     case 'glissant':
-        $tri_sql = 'sommeglissant';
+        $tri_sql = 'somme_glissant';
         break;
 }
 
@@ -78,26 +78,26 @@ foreach ($stats as $ligne) {
     $obj = new stdClass();
     $obj->avion = $ligne->immat;
 
-    if (!is_null($ligne->somme2011)) {
-        $nb_h = floor($ligne->somme2011 / 60);
-        $nb_m = $ligne->somme2011 - $nb_h * 60;
-        $obj->somme2011 = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_last_year)) {
+        $nb_h = floor($ligne->somme_last_year / 60);
+        $nb_m = $ligne->somme_last_year - $nb_h * 60;
+        $obj->somme_last_year = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->somme2011 = '';
+        $obj->somme_last_year = '';
     }
-    if (!is_null($ligne->somme2012)) {
-        $nb_h = floor($ligne->somme2012 / 60);
-        $nb_m = $ligne->somme2012 - $nb_h * 60;
-        $obj->somme2012 = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_this_year)) {
+        $nb_h = floor($ligne->somme_this_year / 60);
+        $nb_m = $ligne->somme_this_year - $nb_h * 60;
+        $obj->somme_this_year = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->somme2012 = '';
+        $obj->somme_this_year = '';
     }
-    if (!is_null($ligne->sommeglissant)) {
-        $nb_h = floor($ligne->sommeglissant / 60);
-        $nb_m = $ligne->sommeglissant - $nb_h * 60;
-        $obj->sommeglissant = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_glissant)) {
+        $nb_h = floor($ligne->somme_glissant / 60);
+        $nb_m = $ligne->somme_glissant - $nb_h * 60;
+        $obj->somme_glissant = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->sommeglissant = '';
+        $obj->somme_glissant = '';
     }
     $avion[] = $obj;
 }

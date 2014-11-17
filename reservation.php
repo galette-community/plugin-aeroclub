@@ -58,58 +58,64 @@ global $zdb;
 /**
  * Annulation de l'enregistrement, on revient à la liste
  */
-if (array_key_exists('annuler', $_POST)) {
-    if ($_POST['origine'] == 'planning') {
-        header('Location: planning.php?msg=resa_annule&jour=' . $_POST['resa_jour']);
+if (filter_has_var(INPUT_POST, 'annuler')) {
+    if (filter_input(INPUT_POST, 'origine') == 'planning') {
+        header('Location: planning.php?msg=resa_annule&jour=' . filter_input(INPUT_POST, 'resa_jour'));
     } else {
-        header('Location: reservation.php?msg=resa_annule&jour=' . $_POST['resa_jour'] . '&avion_id=' . $_POST['avion_id']);
+        header('Location: reservation.php?msg=resa_annule&jour=' . filter_input(INPUT_POST, 'resa_jour') . '&avion_id=' . filter_input(INPUT_POST, 'avion_id'));
     }
 }
 
 /**
  * Suppression de la réservation
  */
-if (array_key_exists('supprimer', $_POST)) {
-    PiloteReservation::supprimeReservation($_POST['resa_id']);
-    header('Location: reservation.php?msg=resa_supprime&jour=' . $_POST['resa_jour'] . '&avion_id=' . $_POST['avion_id']);
+if (filter_has_var(INPUT_POST, 'supprimer')) {
+    PiloteReservation::supprimeReservation(filter_input(INPUT_POST, 'resa_id'));
+    if (filter_has_var(INPUT_POST, 'mode') && filter_input(INPUT_POST, 'mode') == 'ajax') {
+        echo "OK";
+        exit();
+    }
+    header('Location: reservation.php?msg=resa_supprime&jour=' . filter_input(INPUT_POST, 'resa_jour') . '&avion_id=' . filter_input(INPUT_POST, 'avion_id'));
 }
 
 /**
  * Copie de la réservation 
  */
-if (array_key_exists('cloner', $_POST)) {
-    header('Location: reservation.php?jour=' . $_POST['resa_jour'] . '&avion_id=' . $_POST['avion_id'] . '&clone_resa_id=' . $_POST['resa_id']);
+if (filter_has_var(INPUT_POST, 'cloner')) {
+    header('Location: reservation.php?jour=' . filter_input(INPUT_POST, 'resa_jour') . '&avion_id=' . filter_input(INPUT_POST, 'avion_id') . '&clone_resa_id=' . filter_input(INPUT_POST, 'resa_id'));
 }
 
 $reservation = null;
 /**
  * Enregistrement de la réservation
  */
-if (array_key_exists('reserver', $_POST)) {
+if (filter_has_var(INPUT_POST, 'reserver')) {
+    $ajax = filter_has_var(INPUT_POST, 'mode') && filter_input(INPUT_POST, 'mode') == 'ajax';
+
     $reservation = new PiloteReservation();
     $ok = true;
     $msg_erreur = array();
-    if ($_POST['resa_id'] != 'null') {
-        $reservation = new PiloteReservation(intval($_POST['resa_id']));
+    if (filter_input(INPUT_POST, 'resa_id') != 'null') {
+        $reservation = new PiloteReservation(intval(filter_input(INPUT_POST, 'resa_id')));
     }
     if ($login->isAdmin()) {
         // Si Admin, notre ligne est de type
         // {id}$$${nom / prénom}$$${eMail}$$${portable}
-        $ligne = $_POST['resa_id_adh'];
+        $ligne = filter_input(INPUT_POST, 'resa_id_adh');
         $reservation->id_adherent = substr($ligne, 0, strpos($ligne, '$$$'));
     } else {
-        $reservation->id_adherent = $_POST['resa_id_adh'];
+        $reservation->id_adherent = filter_input(INPUT_POST, 'resa_id_adh');
     }
-    $reservation->id_avion = $_POST['avion_id'];
-    $reservation->id_instructeur = $_POST['instructeur_id'];
-    $reservation->heure_debut = dateIHMtoSQL($_POST['resa_jour_debut']) . ' ' . $_POST['resa_heure_debut'] . ':00';
-    $reservation->heure_fin = dateIHMtoSQL($_POST['resa_jour_debut']) . ' ' . $_POST['resa_heure_fin'] . ':00';
-    $reservation->nom = $_POST['resa_nom'];
-    $reservation->destination = $_POST['resa_destination'];
-    $reservation->email_contact = $_POST['resa_email'];
-    $reservation->no_portable = $_POST['resa_portable'];
-    $reservation->commentaires = $_POST['resa_commentaires'];
-    $reservation->est_reservation_club = $_POST['est_resa_club'] == '1';
+    $reservation->id_avion = filter_input(INPUT_POST, 'avion_id');
+    $reservation->id_instructeur = filter_input(INPUT_POST, 'instructeur_id');
+    $reservation->heure_debut = dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')) . ' ' . filter_input(INPUT_POST, 'resa_heure_debut') . ':00';
+    $reservation->heure_fin = dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')) . ' ' . filter_input(INPUT_POST, 'resa_heure_fin') . ':00';
+    $reservation->nom = filter_input(INPUT_POST, 'resa_nom');
+    $reservation->destination = filter_input(INPUT_POST, 'resa_destination');
+    $reservation->email_contact = filter_input(INPUT_POST, 'resa_email');
+    $reservation->no_portable = filter_input(INPUT_POST, 'resa_portable');
+    $reservation->commentaires = filter_input(INPUT_POST, 'resa_commentaires');
+    $reservation->est_reservation_club = filter_input(INPUT_POST, 'est_resa_club') == '1';
     if ($reservation->est_reservation_club) {
         $reservation->id_adherent = null;
     }
@@ -127,13 +133,13 @@ if (array_key_exists('reserver', $_POST)) {
     // Vérification avion est dispo
     $dispos = PiloteAvionDispo::getDisponibilitesPourAvion(intval($reservation->id_avion));
     foreach ($dispos as $d) {
-        if (dateIHMtoSQL($d->date_debut) <= dateIHMtoSQL($_POST['resa_jour_debut']) && dateIHMtoSQL($_POST['resa_jour_debut']) <= dateIHMtoSQL($d->date_fin)) {
+        if (dateIHMtoSQL($d->date_debut) <= dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')) && dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')) <= dateIHMtoSQL($d->date_fin)) {
             $ok = false;
             $msg_erreur[] = 'L\'avion n\'est pas réservable du ' . $d->date_debut . ' au ' . $d->date_fin . '.';
         }
     }
     // Vérification chevauchement avec une autre réservation
-    $resas = PiloteReservation::getReservationsPourAvion(intval($reservation->id_avion), dateIHMtoSQL($_POST['resa_jour_debut']), dateIHMtoSQL($_POST['resa_jour_debut']));
+    $resas = PiloteReservation::getReservationsPourAvion(intval($reservation->id_avion), dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')), dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')));
     foreach ($resas as $r) {
         if ($r->reservation_id != $reservation->reservation_id && $r->heure_debut < $reservation->heure_fin && $reservation->heure_debut < $r->heure_fin) {
             $ok = false;
@@ -147,10 +153,14 @@ if (array_key_exists('reserver', $_POST)) {
 
     if ($ok) {
         $reservation->store();
-        if ($_POST['origine'] == 'planning') {
-            header('Location: planning.php?msg=resa_ok&jour=' . dateIHMtoSQL($_POST['resa_jour_debut']));
+        if ($ajax) {
+            echo "OK";
+            exit();
+        }
+        if (filter_input(INPUT_POST, 'origine') == 'planning') {
+            header('Location: planning.php?msg=resa_ok&jour=' . dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')));
         } else {
-            header('Location: reservation.php?msg=resa_ok&jour=' . dateIHMtoSQL($_POST['resa_jour_debut']) . '&avion_id=' . $_POST['avion_id']);
+            header('Location: reservation.php?msg=resa_ok&jour=' . dateIHMtoSQL(filter_input(INPUT_POST, 'resa_jour_debut')) . '&avion_id=' . filter_input(INPUT_POST, 'avion_id'));
         }
     }
 }
@@ -158,15 +168,18 @@ if (array_key_exists('reserver', $_POST)) {
 /**
  * Récupération des valeurs du jour et avion
  */
-$jour_selectionne = array_key_exists('jour', $_GET) ? $_GET['jour'] : date('Ymd');
-$avion_id = array_key_exists('avion_id', $_GET) ? $_GET['avion_id'] : null;
-$resa_jour = array_key_exists('resa_jour', $_GET) ? $_GET['resa_jour'] : null;
-$resa_heure = array_key_exists('resa_heure', $_GET) ? $_GET['resa_heure'] : null;
-$resa_ok = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_ok';
-$resa_annule = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_annule';
-$resa_supprime = array_key_exists('msg', $_GET) && $_GET['msg'] == 'resa_supprime';
-$resa_id = array_key_exists('resa_id', $_GET) ? $_GET['resa_id'] : null;
-$clone_resa_id = array_key_exists('clone_resa_id', $_GET) ? $_GET['clone_resa_id'] : null;
+$jour_selectionne = filter_has_var(INPUT_GET, 'jour') ? filter_input(INPUT_GET, 'jour') : date('Ymd');
+$avion_id = filter_has_var(INPUT_GET, 'avion_id') ? filter_input(INPUT_GET, 'avion_id') : null;
+$resa_jour = filter_has_var(INPUT_GET, 'resa_jour') ? filter_input(INPUT_GET, 'resa_jour') : null;
+$resa_heure = filter_has_var(INPUT_GET, 'resa_heure') ? filter_input(INPUT_GET, 'resa_heure') : null;
+$resa_ok = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'resa_ok';
+$resa_annule = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'resa_annule';
+$resa_supprime = filter_has_var(INPUT_GET, 'msg') && filter_input(INPUT_GET, 'msg') == 'resa_supprime';
+$resa_id = filter_has_var(INPUT_GET, 'resa_id') ? filter_input(INPUT_GET, 'resa_id') : null;
+$clone_resa_id = filter_has_var(INPUT_GET, 'clone_resa_id') ? filter_input(INPUT_GET, 'clone_resa_id') : null;
+if (!isset($ajax)) {
+    $ajax = filter_has_var(INPUT_GET, 'mode') && filter_input(INPUT_GET, 'mode') == 'ajax';
+}
 
 $dessine_avion = true;
 $dessine_semaine = true;
@@ -226,7 +239,7 @@ if ($avion_id != null) {
 }
 
 // Instructeurs: liste + connecté
-$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 1, 9999);
+$liste_instructeurs = PiloteInstructeur::getTousInstructeurs('nom', 'asc', 0, 9999);
 $is_instructeur = PiloteInstructeur::isPiloteInstructeur($login->login);
 
 /**
@@ -390,11 +403,10 @@ if ($login->isAdmin() || $is_instructeur) {
      * Récupération de la liste des adhérents actifs
      */
     try {
-        $select = new Zend_Db_Select($zdb->db);
-        $select->from(PREFIX_DB . Galette\Entity\Adherent::TABLE)
-                ->where('activite_adh = 1')
+        $select = $zdb->select(Galette\Entity\Adherent::TABLE)
+                ->where(array('activite_adh' => 1))
                 ->order('nom_adh');
-        $result = $select->query()->fetchAll();
+        $result = $zdb->execute($select);
         foreach ($result as $row) {
             $liste_adherents[$row->id_adh] = new stdClass();
             $liste_adherents[$row->id_adh]->key = $row->id_adh . '$$$' . $row->nom_adh . ' ' . $row->prenom_adh . '$$$' . $row->email_adh . '$$$' . $row->gsm_adh;
@@ -554,11 +566,16 @@ if ($reservation != null && !$ok) {
 // Jour + heure de résa
 $tpl->assign('resa_jour', $resa_jour);
 $tpl->assign('resa_heure', $resa_heure);
-$tpl->assign('resa_origine', array_key_exists('origine', $_GET) ? $_GET['origine'] : '');
+$tpl->assign('resa_origine', filter_has_var(INPUT_GET, 'origine') ? filter_input(INPUT_GET, 'origine') : '');
 
-$content = $tpl->fetch('reservation.tpl', PILOTE_SMARTY_PREFIX);
-$tpl->assign('content', $content);
-//Set path to main Galette's template
-$tpl->template_dir = $orig_template_path;
-$tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>
+$tpl->assign('ajax', $ajax);
+
+if ($ajax) {
+    $tpl->display('reservation.tpl', PILOTE_SMARTY_PREFIX);
+} else {
+    $content = $tpl->fetch('reservation.tpl', PILOTE_SMARTY_PREFIX);
+    $tpl->assign('content', $content);
+    //Set path to main Galette's template
+    $tpl->template_dir = $orig_template_path;
+    $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
+}

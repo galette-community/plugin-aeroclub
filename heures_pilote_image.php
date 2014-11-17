@@ -40,8 +40,8 @@ if (!$login->isLogged() || !(PiloteInstructeur::isPiloteInstructeur($login->logi
 }
 
 // Récupération du tri
-$tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'nom';
-$direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
+$tri = filter_has_var(INPUT_GET, 'tri') ? filter_input(INPUT_GET, 'tri') : 'nom';
+$direction = filter_has_var(INPUT_GET, 'direction') ? filter_input(INPUT_GET, 'direction') : 'asc';
 switch ($tri) {
     case 'nom':
         $tri_sql = 'nom_adh';
@@ -53,13 +53,13 @@ switch ($tri) {
         $tri_sql = 'login_adh';
         break;
     case 'an-1':
-        $tri_sql = 'somme2011';
+        $tri_sql = 'somme_last_year';
         break;
     case 'an':
-        $tri_sql = 'somme2012';
+        $tri_sql = 'somme_this_year';
         break;
     case 'glissant':
-        $tri_sql = 'sommeglissant';
+        $tri_sql = 'somme_glissant';
         break;
 }
 
@@ -89,15 +89,15 @@ $max_minute = 10;
 $left_border = 30;
 // Trace du nom des adhérents actifs
 for ($i = 0; $i < count($stats); $i++) {
-    if (is_numeric($stats[$i]->somme2011) && $max_minute < $stats[$i]->somme2011) {
-        $max_minute = $stats[$i]->somme2011;
+    if (is_numeric($stats [$i]->somme_last_year) && $max_minute < $stats[$i]->somme_last_year) {
+        $max_minute = $stats[$i]->somme_last_year;
     }
-    if (is_numeric($stats[$i]->somme2012) && $max_minute < $stats[$i]->somme2012) {
-        $max_minute = $stats[$i]->somme2012;
+    if (is_numeric($stats [$i]->somme_this_year) && $max_minute < $stats[$i]->somme_this_year) {
+        $max_minute = $stats[$i]->somme_this_year;
     }
-    imagettftext($image, 10, 0, 0, ($height - 30) / count($stats) * $i + 17, $grey50, $font_path, $stats[$i]->login_adh);
-    imagettftext($image, 10, 0, 0, ($height - 30) / count($stats) * $i + 27, $grey50, $font_path, $stats[$i]->nom_adh);
-    $size = imagettfbbox(10, 0, $font_path, $stats[$i]->nom_adh);
+    imagettftext($image, 10, 0, 0, ( $height - 30) / count($stats) * $i + 17, $grey50, $font_path, $stats[$i]->login_adh);
+    imagettftext($image, 10, 0, 0, ( $height - 30) / count($stats) * $i + 27, $grey50, $font_path, $stats[$i]->nom_adh);
+    $size = imagettfbbox(10, 0, $font_path, $stats [$i]->nom_adh);
     if ($left_border < $size [2] + 4) {
         $left_border = $size[2] + 4;
     }
@@ -112,36 +112,36 @@ imageline($image, $width - 30, 5, $width - 30, $height - 25, $black);
 $max_minute *= 1.07;
 
 // Trace des ordonnées
-for ($i = 1; $i < 10; $i++) {
-    imageline($image, ($width - $left_border - 30) / 10 * $i + $left_border, 5, ($width - $left_border - 30) / 10 * $i + $left_border, $height - 26, $grey215);
+for ($i = 1; $i < 10; $i ++) {
+    imageline($image, ($width - $left_border - 30) / 10 * $i + $left_border, 5, ($width - $left_border - 30 ) / 10 * $i + $left_border, $height - 26, $grey215);
     $nb_h = floor($max_minute / 10 * $i / 60);
     $nb_m = floor($max_minute / 10 * $i - $nb_h * 60);
     $txt = $nb_h . 'h' . ($nb_m < 10 ? '0' : '') . $nb_m;
     $size = imagettfbbox(10, 0, $font_path, $txt);
-    imagettftext($image, 10, 0, ($width - $left_border - 30) / 10 * $i + $left_border - $size[2] / 2, $height - 12, $grey50, $font_path, $txt);
+    imagettftext($image, 10, 0, ($width - $left_border - 30 ) / 10 * $i + $left_border - $size[2] / 2, $height - 12, $grey50, $font_path, $txt);
 }
 // Max minute
 $nb_h = floor($max_minute / 60);
 $nb_m = floor($max_minute - $nb_h * 60);
-$txt = $nb_h . 'h' . ($nb_m < 10 ? '0' : '') . $nb_m;
+$txt = $nb_h . 'h' . ($nb_m < 10 ? '0' : '' ) . $nb_m;
 $size = imagettfbbox(10, 0, $font_path, $txt);
 imagettftext($image, 10, 0, $width - 30 - $size[2] / 2, $height - 12, $grey50, $font_path, $txt);
 
 // Trace des longueurs adhérents
 for ($i = 0; $i < count($stats); $i++) {
-    if (is_numeric($stats[$i]->somme2011)) {
-        imagefilledrectangle($image, $left_border + 1, ($height - 30) / count($stats) * $i + 7, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme2011 + $left_border, ($height - 30) / count($stats) * $i + 16, $blue);
-        $nb_h = floor($stats[$i]->somme2011 / 60);
-        $nb_m = $stats[$i]->somme2011 - $nb_h * 60;
+    if (is_numeric($stats[$i]->somme_last_year)) {
+        imagefilledrectangle($image, $left_border + 1, ( $height - 30 ) / count($stats) * $i + 7, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme_last_year + $left_border, ( $height - 30) / count($stats) * $i + 16, $blue);
+        $nb_h = floor($stats[$i]->somme_last_year / 60);
+        $nb_m = $stats[$i]->somme_last_year - $nb_h * 60;
         $txt = ($nb_h > 0 ? $nb_h . 'h' : '') . ($nb_m < 10 ? '0' : '') . $nb_m . 'min';
-        imagettftext($image, 10, 0, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme2011 + $left_border + 2, ($height - 30) / count($stats) * $i + 17, $blue, $font_path, $txt);
+        imagettftext($image, 10, 0, ($width - $left_border - 30) / $max_minute * $stats [$i]->somme_last_year + $left_border + 2, ( $height - 30) / count($stats) * $i + 17, $blue, $font_path, $txt);
     }
-    if (is_numeric($stats[$i]->somme2012)) {
-        imagefilledrectangle($image, $left_border + 1, ($height - 30) / count($stats) * $i + 17, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme2012 + $left_border, ($height - 30) / count($stats) * $i + 26, $purple);
-        $nb_h = floor($stats[$i]->somme2012 / 60);
-        $nb_m = $stats[$i]->somme2012 - $nb_h * 60;
+    if (is_numeric($stats[$i]->somme_this_year)) {
+        imagefilledrectangle($image, $left_border + 1, ( $height - 30 ) / count($stats) * $i + 17, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme_this_year + $left_border, ( $height - 30) / count($stats) * $i + 26, $purple);
+        $nb_h = floor($stats[$i]->somme_this_year / 60);
+        $nb_m = $stats[$i]->somme_this_year - $nb_h * 60;
         $txt = ($nb_h > 0 ? $nb_h . 'h' : '') . ($nb_m < 10 ? '0' : '') . $nb_m . 'min';
-        imagettftext($image, 10, 0, ($width - $left_border - 30) / $max_minute * $stats[$i]->somme2012 + $left_border + 2, ($height - 30) / count($stats) * $i + 27, $purple, $font_path, $txt);
+        imagettftext($image, 10, 0, ($width - $left_border - 30) / $max_minute * $stats [$i]->somme_this_year + $left_border + 2, ( $height - 30) / count($stats) * $i + 27, $purple, $font_path, $txt);
     }
 }
 
@@ -151,4 +151,3 @@ header("Content-Disposition:inline ; filename=heures_pilote.png");
 
 // Ecriture de l'image en PNG
 imagepng($image);
-?>

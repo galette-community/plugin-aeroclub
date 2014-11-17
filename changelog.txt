@@ -1,4 +1,24 @@
--- Version 0.8.4 / 21 sept 2013 --
+-- Version 0.9.0 / 17 novembre 2014 --
+Nouveautés :
+- Compatibilité version Galette 0.8
+
+-- Version 0.8.7 / 16 avril 2014 --
+Nouveautés :
+- Le planning et la réservation sont maintenant en AJAX, on effecte sa réservation tout en voyant le calendrier en arrière plan
+
+-- Version 0.8.6 / 4 février 2014 --
+Nouveautés / Corrections :
+- Le solde précédent sur la page "Mes opérations" apparaît en gras + fond orange
+- Tri amélioré sur la page "Mes opérations"
+- L'import ne génère plus la contribution annuelle en double
+- Correction du calcul de solde sur plusieurs années
+- Correction d'une erreur sur la génération de contribuation annuelle
+
+-- Version 0.8.5 / 11 octobre 2013 --
+Corrections :
+- Résolution d'un bug qui masquait les informations sur la fiche pilote
+
+-- Version 0.8.4 / 21 septembtre 2013 --
 Nouveautés :
 - Nouveau tooltip plus mieux beaux aussi sur les miniatures des avions
 - Affichage des photos des avions plus rapide

@@ -39,8 +39,8 @@ if (!$login->isLogged() || !(PiloteInstructeur::isPiloteInstructeur($login->logi
 }
 
 // Récupération du tri
-$tri = array_key_exists('tri', $_GET) ? $_GET['tri'] : 'nom';
-$direction = array_key_exists('direction', $_GET) ? $_GET['direction'] : 'asc';
+$tri = filter_has_var(INPUT_GET, 'tri') ? filter_input(INPUT_GET, 'tri') : 'nom';
+$direction = filter_has_var(INPUT_GET, 'direction') ? filter_input(INPUT_GET, 'direction') : 'asc';
 switch ($tri) {
     case 'nom':
         $tri_sql = 'nom_adh';
@@ -52,16 +52,16 @@ switch ($tri) {
         $tri_sql = 'login_adh';
         break;
     case 'an-1':
-        $tri_sql = 'somme2011';
+        $tri_sql = 'somme_last_year';
         break;
     case 'an':
-        $tri_sql = 'somme2012';
+        $tri_sql = 'somme_this_year';
         break;
     case 'glissant':
-        $tri_sql = 'sommeglissant';
+        $tri_sql = 'somme_glissant';
         break;
 }
-$type_vol = array_key_exists('type_vol', $_GET) ? $_GET['type_vol'] : 'all';
+$type_vol = filter_has_var(INPUT_GET, 'type_vol') ? filter_input(INPUT_GET, 'type_vol') : 'all';
 
 $tpl->assign('page_title', _T("HEURES PILOTE.PAGE TITLE"));
 //Set the path to the current plugin's templates,
@@ -77,26 +77,26 @@ foreach ($stats as $ligne) {
     $obj->prenom = $ligne->prenom_adh;
     $obj->pseudo = $ligne->login_adh;
 
-    if (!is_null($ligne->somme2011)) {
-        $nb_h = floor($ligne->somme2011 / 60);
-        $nb_m = $ligne->somme2011 - $nb_h * 60;
-        $obj->somme2011 = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_last_year)) {
+        $nb_h = floor($ligne->somme_last_year / 60);
+        $nb_m = $ligne->somme_last_year - $nb_h * 60;
+        $obj->somme_last_year = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->somme2011 = '';
+        $obj->somme_last_year = '';
     }
-    if (!is_null($ligne->somme2012)) {
-        $nb_h = floor($ligne->somme2012 / 60);
-        $nb_m = $ligne->somme2012 - $nb_h * 60;
-        $obj->somme2012 = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_this_year)) {
+        $nb_h = floor($ligne->somme_this_year / 60);
+        $nb_m = $ligne->somme_this_year - $nb_h * 60;
+        $obj->somme_this_year = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->somme2012 = '';
+        $obj->somme_this_year = '';
     }
-    if (!is_null($ligne->sommeglissant)) {
-        $nb_h = floor($ligne->sommeglissant / 60);
-        $nb_m = $ligne->sommeglissant - $nb_h * 60;
-        $obj->sommeglissant = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
+    if (!is_null($ligne->somme_glissant)) {
+        $nb_h = floor($ligne->somme_glissant / 60);
+        $nb_m = $ligne->somme_glissant - $nb_h * 60;
+        $obj->somme_glissant = ($nb_h > 0 ? $nb_h . 'h ' : '') . $nb_m . 'min';
     } else {
-        $obj->sommeglissant = '';
+        $obj->somme_glissant = '';
     }
     $adherents[] = $obj;
 }
@@ -116,4 +116,3 @@ $tpl->assign('content', $content);
 //Set path to main Galette's template
 $tpl->template_dir = $orig_template_path;
 $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>

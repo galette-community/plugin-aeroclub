@@ -39,7 +39,7 @@
  */
 function dateAccessToString($str, $sql = false) {
     if (strlen($str) < 4) {
-        return $sql ? new Zend_Db_Expr('NULL') : '';
+        return $sql ? new Zend\Db\Sql\Predicate\Expression('NULL') : '';
     }
 
     // j = Jour du mois sans les zéros initiaux
@@ -99,14 +99,14 @@ $choix_annee = false;
 $fichier_deja_importe = false;
 $liste_annees = array();
 $name_uploaded_file = '';
-$filtre_import = array_key_exists('filter', $_POST) && $_POST['filter'] == 'vrai';
-$ignore_section = array_key_exists('ignore_section', $_POST) && $_POST['ignore_section'] == 'vrai';
+$filtre_import = filter_has_var(INPUT_POST, 'filter') && filter_input(INPUT_POST, 'filter') == 'vrai';
+$ignore_section = filter_has_var(INPUT_POST, 'ignore_section') && filter_input(INPUT_POST, 'ignore_section') == 'vrai';
 $row = -1;
 
 /**
  * IMPORT 
  */
-if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file', $_FILES)) {
+if (filter_has_var(INPUT_POST, 'import') && array_key_exists('pilote_import_file', $_FILES)) {
 
 // Variable globale qui sert à atteindre la base de donnée et exécuter les requêtes
     global $zdb;
@@ -352,15 +352,27 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                          * On stocke aussi dans la table contribution
                          */
                         if ($operation->type_operation == PiloteParametre::getValeurParametre(PiloteParametre::PARAM_COTISATION_SECTION)) {
+
+                            fwrite($f_log, $ligne_mise_a_jour . " | " . date("j M H:i:s") . " | OPERATIONS | " . $line[1] . " | " . number_format($operation->montant_operation, 2) . " | " . $operation->type_operation . " | COTISATION SECTION TROUVEE\n");
+
+                            // Bug 115 - Contribution générée en double si double import
+                            $query_cotis = $zdb->select(\Galette\Entity\Contribution::TABLE)
+                                    ->where(array('date_enreg' => dateAccessToString($line[3], true), \Galette\Entity\Adherent::PK => $operation->id_adherent));
+                            $result_cotis = $zdb->execute($query_cotis);
+                            fwrite($f_log, $ligne_mise_a_jour . " | " . date("j M H:i:s") . " | OPERATIONS | " . $line[1] . " | NB ENREGISTREMENTS TROUVES : " . $result_cotis->count() . "\n");
+                            if ($result_cotis->count() > 0) {
+                                break;
+                            }
+
                             $contrib = new Galette\Entity\Contribution();
                             // Préparation des valeurs à insérer dans la table contributions pour la cotisation
                             $values = array(
-                                'montant_cotis' => 0 - doubleval($operation->montant_operation),
+                                'montant_cotis' => abs(doubleval($operation->montant_operation)),
                                 \Galette\Entity\ContributionsTypes::PK => 1,
-                                'date_enreg' => dateAccessToString($line[3], true),
+                                'date_enreg' => dateAccessToString($line[3]),
                                 'date_debut_cotis' => '01/01/' . substr(dateAccessToString($line[3], true), 0, 4),
                                 'date_fin_cotis' => '31/12/' . substr(dateAccessToString($line[3], true), 0, 4),
-                                'type_paiement_cotis' => intval($_POST['payment_type']),
+                                'type_paiement_cotis' => \Galette\Entity\Contribution::PAYMENT_CHECK,
                                 'info_cotis' => $operation->libelle_operation,
                                 \Galette\Entity\Adherent::PK => $operation->id_adherent,
                             );
@@ -368,6 +380,7 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                             $contrib->check($values, array(), array());
                             // Insert dans la table des contributions
                             $contrib->store();
+                            fwrite($f_log, $ligne_mise_a_jour . " | " . date("j M H:i:s") . " | OPERATIONS | " . $line[1] . " | 1 COTISATION AJOUTEE\n");
 
                             // Si la date d'opération est l'année en cours
                             // On met à jour la date_echeance de l'adhérent à la fin de l'année
@@ -377,7 +390,10 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                                     'activite_adh' => true
                                 );
                                 try {
-                                    $zdb->db->update(PREFIX_DB . Galette\Entity\Adherent::TABLE, $values, Galette\Entity\Adherent::PK . ' = ' . $id_adh);
+                                    $update = $zdb->update(Galette\Entity\Adherent::TABLE)
+                                            ->set($values)
+                                            ->where(array(Galette\Entity\Adherent::PK => $operation->id_adherent));
+                                    $zdb->execute($update);
                                 } catch (Exception $e) {
                                     Analog\Analog::log(
                                             'Something went wrong :\'( | ' . $e->getMessage() . "\n" .
@@ -402,10 +418,10 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
                         $parametre->est_date = $line[3];
                         $parametre->valeur_date = dateAccessToString($line[4], true);
                         $parametre->est_texte = $line[5];
-                        $parametre->valeur_texte = $line[6] == '' ? new Zend_Db_Expr('NULL') : utf8_encode($line[6]);
+                        $parametre->valeur_texte = $line[6] == '' ? new Zend\Db\Sql\Predicate\Expression('NULL') : utf8_encode($line[6]);
                         $parametre->est_numerique = $line[7];
                         $parametre->nombre_decimale = $line[8];
-                        $parametre->valeur_numerique = $line[9] == '' ? new Zend_Db_Expr('NULL') : str_replace(',', '.', $line[9]);
+                        $parametre->valeur_numerique = $line[9] == '' ? new Zend\Db\Sql\Predicate\Expression('NULL') : str_replace(',', '.', $line[9]);
                         $parametre->store();
 
                         if ($line[1] == 'CODE_TRESORIER') {
@@ -468,7 +484,10 @@ if (array_key_exists('import', $_POST) && array_key_exists('pilote_import_file',
 
     if (strlen($code_tresorier) > 1) {
         try {
-            $zdb->db->update(PREFIX_DB . Galette\Entity\Adherent::TABLE, array('bool_admin_adh' => 1), 'login_adh = "' . $code_tresorier . '"');
+            $update = $zdb->update(Galette\Entity\Adherent::TABLE)
+                    ->set(array('bool_admin_adh' => 1))
+                    ->where(array('login_adh' => $code_tresorier));
+            $zdb->execute($update);
         } catch (Exception $exc) {
             Analog\Analog::log('Something went wrong :\'( | ' . $exc->getTraceAsString(), Analog\Analog::ERROR);
         }
@@ -502,8 +521,8 @@ $tpl->assign('file_deleted', false);
 /**
  * SUPPRESSION DES LOGS 
  */
-if (array_key_exists('supprimer', $_POST)) {
-    $delete_files = $_POST['delete_files'];
+if (filter_has_var(INPUT_POST, 'supprimer')) {
+    $delete_files = filter_input(INPUT_POST, 'delete_files', FILTER_SANITIZE_STRING, FILTER_REQUIRE_ARRAY);
     $nb = 0;
     foreach ($delete_files as $fn) {
         if (unlink('historique_import/' . $fn)) {

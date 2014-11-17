@@ -28,7 +28,6 @@
  * @link      http://galette.tuxfamily.org
  * @since     Available since 0.7
  */
-
 define('GALETTE_BASE_PATH', '../../');
 require_once GALETTE_BASE_PATH . 'includes/galette.inc.php';
 if (!$login->isLogged() || !$login->isAdmin()) {
@@ -48,9 +47,10 @@ $liste_erreurs = array();
 /**
  * Execution du script demandé si nécessaire
  */
-if (array_key_exists('nom_script', $_POST) && $_POST['nom_script'] != '') {
-    $resultat = PiloteSQLScripts::executeSQLScript('./sql/' . $_POST['nom_script']);
-    PiloteSQLScripts::ajouterLogSQLScript($_POST['nom_script']);
+if (filter_has_var(INPUT_POST, 'nom_script') && strlen(filter_input(INPUT_POST, 'nom_script')) > 0) {
+    $script = filter_input(INPUT_POST, 'nom_script');
+    $resultat = PiloteSQLScripts::executeSQLScript('./sql/' . $script);
+    PiloteSQLScripts::ajouterLogSQLScript($script);
 
     if (is_array($resultat)) {
         $erreur = true;
@@ -70,7 +70,7 @@ $array_tables = array(
     PiloteAvionPicture::TABLE,
     PiloteReservation::TABLE,
     PiloteInstructeur::TABLE,
-    PiloteSQLScripts::TABLE,    
+    PiloteSQLScripts::TABLE,
 );
 
 $liste_tables = array();
@@ -78,13 +78,12 @@ foreach ($array_tables as $table) {
     $liste_tables[$table] = new stdClass();
     $liste_tables[$table]->nom_table = PREFIX_DB . PILOTE_PREFIX . $table;
     $liste_tables[$table]->existe = PiloteParametre::tableExiste(PREFIX_DB . PILOTE_PREFIX . $table);
-    $liste_tables[$table]->nb_lignes = PiloteParametre::nbEnregistrementTable(PREFIX_DB . PILOTE_PREFIX . $table);
+    $liste_tables[$table]->nb_lignes = PiloteParametre::nbEnregistrementTable(PILOTE_PREFIX . $table);
     $liste_tables[$table]->version = '';
     if ($liste_tables[$table]->existe) {
         $liste_tables[$table]->version = PiloteParametre::versionTable(PREFIX_DB . PILOTE_PREFIX . $table);
     }
 }
-
 
 $montre_infos_table = false;
 $infos_table = array();
@@ -93,35 +92,25 @@ $infos_table = array();
  * Si on demande à voir la structure de la table et qu'il s'agit d'une table du plugin
  * on en cherche les infos
  */
-if (array_key_exists('table', $_GET) && stripos($_GET['table'], PILOTE_PREFIX) !== false) {
+if (filter_has_var(INPUT_GET, 'table') && stripos(filter_input(INPUT_GET, 'table'), PILOTE_PREFIX) !== false) {
     try {
-        $infos = $zdb->db->describeTable($_GET['table']);
+        $metadata = new \Zend\Db\Metadata\Metadata($zdb->db);
+        $table = $metadata->getTable(filter_input(INPUT_GET, 'table'));
+        $infos = $table->getColumns();
+        $i = 0;
 
-        $mysql_infos = array();
-        try {
-            $query = $zdb->db->query('SHOW COLUMNS FROM ' . $_GET['table']);
-            $mysql_infos = $query->fetchAll();
-        } catch (Exception $e) {
-            Analog\Analog::log('Erreur SQL ' . $e->getMessage(), Analog\Analog::ERROR);
-        }
-
-        foreach ($infos as $colonne) {
+        foreach ($infos as $col) {
             $info_colonne = new stdClass();
-            $info_colonne->numero = $colonne['COLUMN_POSITION'];
-            $info_colonne->table_name = $colonne['TABLE_NAME'];
-            $info_colonne->name = $colonne['COLUMN_NAME'];
-            $info_colonne->data_type = $colonne['DATA_TYPE'];
-            $info_colonne->length = $colonne['LENGTH'];
-            $info_colonne->unsigned = $colonne['UNSIGNED'];
-            $info_colonne->nullable = $colonne['NULLABLE'];
-            $info_colonne->primary = $colonne['PRIMARY'];
-            $info_colonne->primary_position = $colonne['PRIMARY_POSITION'];
-            $info_colonne->identity = $colonne['IDENTITY'];
-            foreach ($mysql_infos as $my_info) {
-                if (is_object($my_info) && $my_info->Field == $info_colonne->name && $my_info->Key != '') {
-                    $info_colonne->index = 1;
-                }
-            }
+            $info_colonne->numero = ++$i;
+            $info_colonne->table_name = $col->getTableName();
+            $info_colonne->name = $col->getName();
+            $info_colonne->data_type = $col->getDataType();
+            $info_colonne->length = $col->getCharacterMaximumLength();
+            $info_colonne->unsigned = $col->getNumericUnsigned();
+            $info_colonne->nullable = $col->getIsNullable();
+            //$info_colonne->primary = $colonne['PRIMARY'];
+            //$info_colonne->primary_position = $colonne['PRIMARY_POSITION'];
+            //$info_colonne->identity = $colonne['IDENTITY'];
 
             $infos_table[] = $info_colonne;
         }
@@ -136,7 +125,7 @@ if (array_key_exists('table', $_GET) && stripos($_GET['table'], PILOTE_PREFIX) !
  */
 $liste_scripts = array();
 $fichiers_sql = array();
-$dh = opendir('./sql');
+$dh = opendir('./scripts');
 while (false !== ($filename = readdir($dh))) {
     if (preg_match('/.sql$/', $filename)) {
         $fichiers_sql[] = $filename;
@@ -156,7 +145,7 @@ foreach ($fichiers_sql as $fichier) {
     $script = new stdClass();
     $script->filename = $fichier;
     $script->numero_ligne = $row++;
-    $script->modifie = date('d/m/Y H:i', filemtime('./sql/' . $fichier));
+    $script->modifie = date('d/m/Y H:i', filemtime('./scripts/' . $fichier));
     $result = PiloteSQLScripts::chercheNbExecutionDateExecution($fichier);
     $script->nb_execution = $result->nb_execution;
     $script->derniere_execution = '';
@@ -166,7 +155,6 @@ foreach ($fichiers_sql as $fichier) {
     }
     $liste_scripts[] = $script;
 }
-
 
 $tpl->assign('page_title', _T("SQL.PAGE TITLE"));
 //Set the path to the current plugin's templates,
@@ -191,4 +179,3 @@ $tpl->assign('content', $content);
 //Set path to main Galette's template
 $tpl->template_dir = $orig_template_path;
 $tpl->display('page.tpl', PILOTE_SMARTY_PREFIX);
-?>
