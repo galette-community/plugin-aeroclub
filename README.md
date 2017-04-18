@@ -18,3 +18,29 @@ Pour l'administrateur du site :
 * Gestion des instructeurs
 * Rapprochement des réservations
 * Paramétrage application (coordonnées de l'aéroclub pour la nuit aéro, jours réservables, jours de non réservation des aéronefs) 
+
+### Captures écrans
+
+Graphique des heures de vols d'un aéronefs (vue réservée aux gestionnaires)
+
+![](images/heure_vol_aeronefs.png)
+
+Planning de vol des aéronefs
+
+![](images/planning.png)
+
+Calendrier de réservation d'un aéronef
+
+![](images/calendrier.png)
+
+Graphique pour un pilote récapitulant son solde (€), et ses heures de vols (par mois et cumulé)
+
+![](images/graphique_pilote.png)
+
+Vue du récapitulatifs des vols d'un membre, trié par date
+
+![](images/recap_vols.png)
+
+Export en PDF pour impression du récapitulatifs des vols du membre
+
+![](images/vols_pdf.png)
