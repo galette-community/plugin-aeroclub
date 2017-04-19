@@ -4,7 +4,7 @@ S'agissant d'un plugin pour [Galette](https://galette.eu), vous devez obligatoir
 
 Dézippez l'archive dans le répertoire plugins de Galette.
 
-Rendez vous sur la page de configuration des plugins, comme décrit [dans la documentation Galette](http://galette.tuxfamily.org/documentation/fr/plugins/index.html), activez le plugin _Aéroclub (Pilote)_ si ce n'est pas fait, et lancez la procédure de création des tables SQL.
+Rendez vous sur la page de configuration des plugins, comme décrit [dans la documentation Galette](https://galette.eu/documentation/fr/plugins/index.html), activez le plugin _Aéroclub (Pilote)_ si ce n'est pas fait, et lancez la procédure de création des tables SQL.
 
 Vous devriez avoir 9 nouvelles tables dans la base de données :
 
@@ -36,21 +36,21 @@ N'oubliez pas de cocher la case **Peut être réservé ?** sinon votre aéronef 
 
 Choisissez une photo (pour maximiser la réussite du téléchargement du fichier, utilisez un nom de fichier sans espaces ni caractères accentés, idéalement en minuscules) de l'aéronef et cliquez sur **Enregistrer**.
 
-![Créer aéronef](Configuration des aéronefs_http://kravda.free.fr/doc/creer_aeronef_th.png|http://kravda.free.fr/doc/creer_aeronef.png)
+![Créer aéronef](images/creer_aeronef.png)
 
 Votre aéronef est prêt.
 
-![Liste aéronef](Configuration des aéronefs_http://kravda.free.fr/doc/liste_aeronef_th.png|http://kravda.free.fr/doc/liste_aeronef.png)
+![Liste aéronef](images/liste_aeronef.png)
 
 Vous pouvez cliquer sur le bouton d'édition de l'aéronef pour vérifier que la photo a bien été téléchargée. Si la photo est présente, la miniature utilisée pour la réservation et le planning sera créée automatiquement et visible.
 
-![Miniature](Configuration des aéronefs_http://kravda.free.fr/doc/miniature_aeronef_th.png|http://kravda.free.fr/doc/miniature_aeronef.png)
+![Miniature](images/miniature_aeronef.png)
 
 ### Périodes d'indisponibilité d'un aéronef
 
-Si un aéronef ne devait pas être disponible pour une période donnée (prêt à un autre aéroclub, réparation, etc.), cliquez sur le bouton ![](Configuration des aéronefs_http://kravda.free.fr/doc/dispos.png) depuis la liste des aéronefs pour définir une période d'indisponibilité de l'aéronef.
+Si un aéronef ne devait pas être disponible pour une période donnée (prêt à un autre aéroclub, réparation, etc.), cliquez sur le bouton "disponibilités" depuis la liste des aéronefs pour définir une période d'indisponibilité de l'aéronef.
 
-![Indisponibilité d'un aéronef](Configuration des aéronefs_http://kravda.free.fr/doc/indispo_aeronef_th.png|http://kravda.free.fr/doc/indispo_aeronef.png)
+![Indisponibilité d'un aéronef](images/indispo_aeronef.png)
 
 Là, vous pouvez définir la plage de date pour laquelle l'aéronef ne pourra pas être réservé. 
 
@@ -66,6 +66,6 @@ Ouvrez la page _**"Liste instructeurs"**_, puis cliquez sur _**"Ajouter un instr
 
 Sélectionnez dans la liste déroulante l'adhérent associé pour que l'instructeur soit un membre de Galette. Sinon laissez _"extérieur"_ pour un intervenant extérieur non enregistré dans Galette :
 
-![Créer un instructeur](ajout_instructeurs_http://kravda.free.fr/doc/creer_instructeur_th.png|http://kravda.free.fr/doc/creer_instructeur.png)
+![Créer un instructeur](images/creer_instructeur.png)
 
 C'est bon, quand l'adhérent sélectionné se connectera, il aura accès aux fonctionnalités réservées aux instructeurs.
