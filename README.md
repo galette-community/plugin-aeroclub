@@ -1,7 +1,3 @@
----
-title: Plugin Aéroclub pour Galette
----
-
 ## Galette plugin Aéroclub
 
 Galette Aéroclub est un plugin réalise pour Galette permettant la gestion de base d'un Aéroclub.
